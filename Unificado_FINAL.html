@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script>
+  // Detecta si el dispositivo es móvil
+  const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  const viewport = document.querySelector("meta[name=viewport]");
+
+  // Configuración base: modo escritorio simulado
+  viewport.setAttribute(
+    "content",
+    "width=1280, initial-scale=0.30, minimum-scale=0.30, maximum-scale=0.60"
+  );
+
+  // Permitir zoom manual en cualquier dispositivo
+  if (isMobile) {
+    document.addEventListener("gesturestart", function () {
+      viewport.setAttribute(
+        "content",
+        "width=1280, minimum-scale=0.30, maximum-scale=0.70"
+      );
+    });
+  } else {
+    document.addEventListener("wheel", function (e) {
+      if (e.ctrlKey) {
+        e.preventDefault();
+      }
+    }, { passive: false });
+  }
+  </script>
+  
+  <title>Sistema de Programas Sociales | Gobierno de Chihuahua</title>
+  <meta name="description" content="Sistema unificado de consulta de programas sociales del Gobierno de Chihuahua 2024-2025">
+  
+  <style>
+    :root {
+      --azul-prim: #003f7f;
+      --azul-sec: #0066cc;
+      --transition-speed: 0.3s;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, var(--azul-sec) 0%, var(--azul-prim) 100%);
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    .main-nav {
+      background: linear-gradient(135deg, #1a237e 0%, #0d47a1 100%);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      position: relative;
+      z-index: 1000;
+    }
+
+    .nav-container {
+      max-width: 1800px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      padding: 0 30px;
+      gap: 30px;
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      padding: 15px 0;
+      border-right: 2px solid rgba(255,255,255,0.2);
+      padding-right: 30px;
+    }
+
+    .nav-logo img {
+      height: 50px;
+      width: auto;
+    }
+
+    .nav-title {
+      color: white;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .tabs-container {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      flex: 1;
+      padding: 10px 0;
+    }
+
+    .tabs-container::-webkit-scrollbar {
+      height: 6px;
+    }
+
+    .tabs-container::-webkit-scrollbar-track {
+      background: rgba(255,255,255,0.1);
+      border-radius: 3px;
+    }
+
+    .tabs-container::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.3);
+      border-radius: 3px;
+    }
+
+    .tab-button {
+      background: rgba(255,255,255,0.1);
+      border: none;
+      color: rgba(255,255,255,0.8);
+      padding: 12px 24px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      white-space: nowrap;
+      transition: all 0.3s ease;
+      border: 2px solid transparent;
+    }
+
+    .tab-button:hover {
+      background: rgba(255,255,255,0.2);
+      color: white;
+      transform: translateY(-2px);
+    }
+
+    .tab-button.active {
+      background: white;
+      color: var(--azul-prim);
+      font-weight: 700;
+      border-color: var(--azul-sec);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    .content-wrapper {
+      height: calc(100vh - 85px);
+      overflow: hidden;
+    }
+
+    .tab-content {
+      display: none;
+      height: 100%;
+      overflow-y: auto;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .iframe-container {
+      width: 100%;
+      height: 100%;
+      background: white;
+    }
+
+    .iframe-container iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+  <nav class="main-nav">
+    <div class="nav-container">
+      <div class="nav-logo">
+        <img src="https://i.imgur.com/YourLogoHere.png" alt="Logo Gobierno Chihuahua" onerror="this.style.display='none'">
+        <div class="nav-title">Sistema de Programas Sociales</div>
+      </div>
+      
+      <div class="tabs-container">
+        <button class="tab-button active" onclick="cambiarPestana(0)">📊 Datos Globales</button>
+        <button class="tab-button" onclick="cambiarPestana(1)">🏛️ Datos Institucionales</button>
+        <button class="tab-button" onclick="cambiarPestana(2)">👥 Grupos Vulnerables</button>
+        <button class="tab-button" onclick="cambiarPestana(3)">📈 Ejes de Cobertura</button>
+        <button class="tab-button" onclick="cambiarPestana(4)">🏘️ Beneficiarios por Municipio</button>
+        <button class="tab-button" onclick="cambiarPestana(5)">🗺️ Mapa de Cobertura Estatal</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="content-wrapper">
+    <div id="pestana-0" class="tab-content active">
+      <div class="iframe-container">
+        <iframe src="0_Datos_Globales.html" title="Datos Globales"></iframe>
+      </div>
+    </div>
+    
+    <div id="pestana-1" class="tab-content">
+      <div class="iframe-container">
+        <iframe src="1_Datos_Institucionales.html" title="Datos Institucionales"></iframe>
+      </div>
+    </div>
+    
+    <div id="pestana-2" class="tab-content">
+      <div class="iframe-container">
+        <iframe src="2_Grupos_Vulnerables.html" title="Grupos Vulnerables"></iframe>
+      </div>
+    </div>
+    
+    <div id="pestana-3" class="tab-content">
+      <div class="iframe-container">
+        <iframe src="3_Ejes_Cobertura.html" title="Ejes de Cobertura"></iframe>
+      </div>
+    </div>
+    
+    <div id="pestana-4" class="tab-content">
+      <div class="iframe-container">
+        <iframe src="4_Beneficiarios_Municipio.html" title="Beneficiarios por Municipio"></iframe>
+      </div>
+    </div>
+    
+    <div id="pestana-5" class="tab-content">
+      <div class="iframe-container">
+        <iframe src="5_Mapa_Cobertura_Estatal.html" title="Mapa de Cobertura Estatal"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function cambiarPestana(index) {
+      // Ocultar todas las pestañas
+      document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      
+      // Quitar clase active de todos los botones
+      document.querySelectorAll('.tab-button').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      
+      // Mostrar pestaña seleccionada
+      document.getElementById('pestana-' + index).classList.add('active');
+      
+      // Activar botón seleccionado
+      document.querySelectorAll('.tab-button')[index].classList.add('active');
+      
+      // Guardar selección en localStorage
+      localStorage.setItem('pestanaActiva', index);
+    }
+
+    // Restaurar pestaña al cargar
+    window.addEventListener('load', function() {
+      const pestanaGuardada = localStorage.getItem('pestanaActiva');
+      if (pestanaGuardada !== null) {
+        cambiarPestana(parseInt(pestanaGuardada));
+      }
+    });
+  </script>
+</body>
+</html>
