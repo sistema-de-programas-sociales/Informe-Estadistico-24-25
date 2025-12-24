@@ -1,0 +1,1545 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script>
+  // Detecta si el dispositivo es móvil
+  const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  const viewport = document.querySelector("meta[name=viewport]");
+
+  // Configuración base: modo escritorio simulado
+  viewport.setAttribute(
+    "content",
+    "width=1280, initial-scale=0.30, minimum-scale=0.30, maximum-scale=0.60"
+  );
+
+  // Permitir zoom manual en cualquier dispositivo
+  if (isMobile) {
+    document.addEventListener("gesturestart", function () {
+      viewport.setAttribute(
+        "content",
+        "width=1280, minimum-scale=0.30, maximum-scale=0.70"
+      );
+    });
+  } else {
+    document.addEventListener("wheel", function (e) {
+      if (e.ctrlKey) {
+        e.preventDefault();
+      }
+    }, { passive: false });
+  }
+  </script>
+  <title>Grupos Vulnerables - Gobierno de Chihuahua</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --azul-prim: #003f7f;
+      --azul-sec: #0066cc;
+      --azul-claro: #e3f2fd;
+      --verde: #28a745;
+      --verde-claro: #d4edda;
+      --amarillo: #ffc107;
+      --naranja: #ff9800;
+      --rojo: #dc3545;
+      --rojo-claro: #f8d7da;
+      --morado: #6f42c1;
+      --cyan: #00bcd4;
+      --gris-borde: #dee2e6;
+      --gris-card: #f8f9fa;
+      --gris-oscuro: #495057;
+      --texto: #212529;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7474bf 100%);
+            background-attachment: fixed;
+            position: relative;
+            color: #212529;
+            line-height: 1.6;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+       body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    animation: patternMove 60s linear infinite;
+}
+
+
+        @keyframes patternMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(60px, 60px); }
+        }
+
+        /* Partículas flotantes */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            animation: float 20s infinite;
+        }
+
+        .particle:nth-child(1) { left: 10%; animation-delay: 0s; animation-duration: 25s; }
+        .particle:nth-child(2) { left: 20%; animation-delay: 2s; animation-duration: 20s; }
+        .particle:nth-child(3) { left: 30%; animation-delay: 4s; animation-duration: 22s; }
+        .particle:nth-child(4) { left: 40%; animation-delay: 1s; animation-duration: 24s; }
+        .particle:nth-child(5) { left: 50%; animation-delay: 3s; animation-duration: 21s; }
+        .particle:nth-child(6) { left: 60%; animation-delay: 5s; animation-duration: 23s; }
+        .particle:nth-child(7) { left: 70%; animation-delay: 2.5s; animation-duration: 26s; }
+        .particle:nth-child(8) { left: 80%; animation-delay: 1.5s; animation-duration: 19s; }
+        .particle:nth-child(9) { left: 90%; animation-delay: 3.5s; animation-duration: 27s; }
+        .particle:nth-child(10) { left: 15%; animation-delay: 4.5s; animation-duration: 18s; }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) scale(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100vh) scale(1);
+                opacity: 0;
+            }
+        }
+
+    .container {
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+
+.header{
+      background:linear-gradient(135deg,var(--azul-sec) 0%,var(--azul-prim) 100%);
+      color:#fff;
+      padding:25px 40px;
+      display:flex;
+      align-items:center;
+      gap:25px;
+      box-shadow:0 6px 20px rgba(0,0,0,.2);
+      position:relative;
+      overflow:hidden;
+    }
+    .header::before{
+      content:'';
+      position:absolute;
+      top:-50%;
+      right:-10%;
+      width:60%;
+      height:200%;
+      background:radial-gradient(circle,rgba(255,255,255,.1) 0%,transparent 70%);
+      transform:rotate(15deg);
+    }
+    .header img{
+      width:220px;
+      height:auto;
+      background:#fff;
+      border-radius:12px;
+      padding:12px;
+      box-shadow:0 4px 12px rgba(0,0,0,.2);
+      position:relative;
+      z-index:1;
+    }
+    .header-content{flex:1;position:relative;z-index:1}
+    .program-code{
+      font-size:13px;
+      font-weight:800;
+      letter-spacing:.8px;
+      background:rgba(255,255,255,.2);
+      backdrop-filter:blur(10px);
+      padding:6px 16px;
+      border-radius:25px;
+      display:inline-block;
+      margin-bottom:10px;
+      box-shadow:0 2px 8px rgba(0,0,0,.15);
+      border:1px solid rgba(255,255,255,.3);
+    }
+    .header h1{
+      font-size:32px;
+      font-weight:900;
+      margin-bottom:8px;
+      text-shadow:0 2px 8px rgba(0,0,0,.2);
+      letter-spacing:-.5px;
+    }
+    .header .subtitle{font-size:15px;opacity:.95;font-weight:500}
+
+    /* FILTRO DE AÑO */
+    .year-filter {
+      background: white;
+     margin: 20px 0;
+      padding: 12px 25px;
+      border-radius: 15px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--gris-oscuro);
+    }
+
+    .year-filter label {
+     font-weight: 600;
+      font-size: 14px;
+      color: var(--gris-oscuro);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .year-filter select {
+    border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 4px 8px;
+  font-weight: 700;
+  font-size: 14px;
+  background-color: #f9f9f9;
+  cursor: pointer;
+  transition: all 0.3s;
+    }
+
+    .year-filter select:hover {
+      border-color: var(--azul-sec);
+      box-shadow: 0 4px 12px rgba(0,102,204,0.2);
+    }
+
+    /* RECUADRO INFORMATIVO */
+    .info-destacada {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      margin-bottom: 25px;
+    }
+
+    .info-card {
+      background: #003f7f;
+      color: white;
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .info-card::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -20%;
+      width: 100%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+    }
+
+    .info-card-content {
+      position: relative;
+      z-index: 1;
+    }
+
+    .info-card-icon {
+      font-size: 48px;
+      margin-bottom: 15px;
+    }
+
+    .info-card-label {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+      opacity: 0.9;
+    }
+
+    .info-card-value {
+      font-size: 42px;
+      font-weight: 900;
+      margin-bottom: 5px;
+    }
+
+    .info-card-desc {
+      font-size: 14px;
+      opacity: 0.85;
+      font-weight: 500;
+    }
+
+    /* SECCIÓN DE GRUPOS */
+    .grupos-section {
+      background: white;
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+      margin-bottom: 25px;
+    }
+
+    .section-title {
+      font-size: 24px;
+      font-weight: 900;
+      color: var(--azul-prim);
+      margin-bottom: 25px;
+      padding-bottom: 15px;
+      border-bottom: 3px solid var(--gris-borde);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* TABLA DE GRUPOS */
+    .grupos-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+
+    .grupos-table thead {
+      background: linear-gradient(135deg, var(--azul-sec) 0%, var(--azul-prim) 100%);
+      color: white;
+    }
+
+    .grupos-table th {
+      padding: 18px 15px;
+      text-align: left;
+      font-weight: 800;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .grupos-table th:last-child {
+      text-align: center;
+    }
+
+    .grupos-table tbody tr {
+      border-bottom: 1px solid var(--gris-borde);
+      transition: all 0.3s;
+    }
+
+    .grupos-table tbody tr:hover {
+      background: var(--azul-claro);
+      transform: translateX(5px);
+    }
+
+    .grupos-table td {
+      padding: 20px 15px;
+      font-size: 15px;
+      color: var(--texto);
+    }
+
+    .grupos-table td:first-child {
+      font-weight: 700;
+    }
+
+    .grupo-icon {
+      font-size: 20px;
+      margin-right: 10px;
+    }
+
+    .numero-personas {
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--azul-prim);
+    }
+
+    .cobertura-badge {
+      display: inline-block;
+      padding: 8px 16px;
+      border-radius: 25px;
+      font-weight: 800;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .cobertura-alta {
+      background: var(--verde-claro);
+      color: var(--verde);
+    }
+
+    .cobertura-media {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    .cobertura-baja {
+      background: var(--rojo-claro);
+      color: var(--rojo);
+    }
+
+    /* GRÁFICA */
+    .chart-section {
+      background: white;
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+      margin-bottom: 25px;
+    }
+
+    .chart-wrapper {
+      position: relative;
+      height: 400px;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 1200px) {
+      .info-destacada {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .grupos-table {
+        font-size: 13px;
+      }
+
+      .grupos-table th,
+      .grupos-table td {
+        padding: 12px 8px;
+      }
+    }
+  
+    /* ========================================== */
+    
+    /* =================== HEADER NUEVO DISEÑO =================== */
+    .header {
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        color: #fff;
+        padding: 25px 40px;
+        display: flex;
+        align-items: center;
+        gap: 25px;
+        box-shadow: 0 10px 40px rgba(30, 60, 114, 0.4);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: 
+            radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+        animation: headerPulse 8s ease-in-out infinite;
+    }
+
+    @keyframes headerPulse {
+        0%, 100% { opacity: 0.5; }
+        50% { opacity: 1; }
+    }
+
+    .header::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, 
+            #00bcd4 0%,   /* Cyan */
+            #4caf50 50%,  /* Verde */
+            #ff9800 100%  /* Naranja */
+        );
+        animation: shimmer 3s ease-in-out infinite;
+        z-index: 2;
+    }
+
+    @keyframes shimmer {
+        0%, 100% { opacity: 0.6; }
+        50% { opacity: 1; }
+    }
+
+    .header img {
+        width: 220px;
+        height: auto;
+        background: #fff;
+        border-radius: 12px;
+        padding: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        position: relative;
+        z-index: 1;
+        transition: transform 0.3s ease;
+    }
+
+    .header img:hover {
+        transform: scale(1.05);
+    }
+
+    .header-content {
+        flex: 1;
+        position: relative;
+        z-index: 1;
+    }
+
+    .header h1 {
+        font-size: 32px;
+        font-weight: 900;
+        margin: 0 0 8px 0;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        letter-spacing: -0.5px;
+    }
+
+    .logo-der {
+    height: 85px;
+    margin-left: 20px;
+    object-fit: contain;
+}
+
+    .header p,
+    .subtitle {
+        font-size: 15px;
+        opacity: 0.95;
+        font-weight: 500;
+        margin: 0;
+    }
+
+
+    /* DIVISOR MULTICOLOR */
+    /* ========================================== */
+    
+    .header::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, 
+        #00bcd4 0%,   /* Cyan */
+        #4caf50 50%,  /* Verde */
+        #ff9800 100%  /* Naranja */
+      );
+      animation: shimmer 3s ease-in-out infinite;
+      z-index: 2;
+    }
+
+    @keyframes shimmer {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+
+    /* ========================================== */
+    /* FOOTER */
+    /* ========================================== */
+    
+    .footer {
+      background: linear-gradient(135deg, #003f7f 0%, #002a56 100%);
+      color: #fff;
+      padding: 30px 40px;
+      margin-top: 40px;
+      border-radius: 15px 15px 0 0;
+      box-shadow: 0 -4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .footer-content {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    
+    .footer-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 15px;
+      color: #fff;
+      border-bottom: 2px solid rgba(255,255,255,0.3);
+      padding-bottom: 10px;
+    }
+    
+    .footer-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 25px;
+      margin-top: 20px;
+    }
+    
+    .footer-section {
+      background: rgba(255,255,255,0.1);
+      padding: 20px;
+      border-radius: 10px;
+      backdrop-filter: blur(10px);
+    }
+    
+    .footer-section h3 {
+      font-size: 16px;
+      font-weight: 600;
+      margin: 0 0 12px 0;
+      color: #fff;
+    }
+    
+    .footer-section p {
+      font-size: 14px;
+      line-height: 1.6;
+      margin: 0;
+      opacity: 0.9;
+    }
+    
+    .footer-legend {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255,255,255,0.3);
+      text-align: center;
+      font-size: 13px;
+      opacity: 0.8;
+    }
+
+  </style>
+</head>
+<body>
+
+    <!-- Partículas flotantes -->
+    <div class="particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
+  <div class="container">
+    <!-- HEADER -->
+    <div class="header">
+  <!-- LOGO IZQUIERDO -->
+  <img src="https://apps2018.cobachih.edu.mx/assets/images/footerimg/LOGO%20GOBIERNO%20COLOR.png" alt="Gobierno del Estado de Chihuahua">
+
+  <div class="header-content">
+    <h1>📊 Grupos Vulnerables</h1>
+    <p>Total de personas atendidas segmentadas por grupos vulnerables</p>
+  </div>
+
+  <!-- LOGO DERECHO -->
+  <img src="https://sds.chihuahua.gob.mx/sisco/imagenes/logovertical.png"
+       alt="Logo SEDHBC"
+       class="logo-der">
+</div>
+
+    <!-- FILTRO DE AÑO -->
+    <div class="year-filter">
+      <label for="yearSelect">Año de Ejercicio 📅</label>
+      <select id="yearSelect">
+        <option value="2024">2024</option>
+        <option value="2025" selected>2025</option>
+      </select>
+    </div>
+
+    <!-- RECUADRO INFORMATIVO -->
+    <div class="info-destacada">
+      <div class="info-card">
+        <div class="info-card-content">
+          <div class="info-card-icon">🏙️</div>
+          <div class="info-card-label">Población total de Chihuahua en situación de pobreza, vulnerabilidad y/o con algun tipo de carencia social</div>
+          <div class="info-card-value">1,792,300</div>
+          <div class="info-card-desc">Según INEGI</div>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-card-content">
+          <div class="info-card-icon">🤝</div>
+          <div class="info-card-label">Personas Atendidas</div>
+          <div class="info-card-value" id="totalAtendidos">0</div>
+          <div class="info-card-desc" id="yearDesc">en 2024</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COBERTURA PoblaciónAL VISUAL -->
+    <div class="grupos-section">
+      <h2 class="section-title">📈 Cobertura Poblaciónal General</h2>
+      <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px; align-items: center;">
+        <div>
+          <div style="margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+              <span style="font-weight: 700; color: var(--texto);">Personas Atendidas</span>
+              <span style="font-weight: 900; font-size: 20px; color: var(--azul-prim);" id="personasAtendidas">0</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+              <span style="font-weight: 700; color: var(--gris-oscuro);">Población total de Chihuahua en situación de pobreza, vulnerabilidad y/o con algun tipo de carencia social</span>
+              <span style="font-weight: 700; font-size: 18px; color: var(--gris-oscuro);">1,792,300</span>
+            </div>
+            <div style="background: #e0e0e0; height: 40px; border-radius: 20px; overflow: hidden; position: relative; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);">
+              <div id="coberturaBar" style="background: linear-gradient(90deg, #667eea 0%, #764ba2 100%); height: 100%; width: 0%; transition: width 1s ease; display: flex; align-items: center; justify-content: flex-end; padding-right: 15px; color: white; font-weight: 900; font-size: 16px; border-radius: 20px;">
+                0%
+              </div>
+            </div>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 20px;">
+            <div style="background: var(--azul-claro); padding: 15px; border-radius: 12px; text-align: center;">
+              <div style="font-size: 11px; color: var(--azul-prim); font-weight: 700; text-transform: uppercase; margin-bottom: 5px;">Porcentaje</div>
+              <div style="font-size: 28px; font-weight: 900; color: var(--azul-prim);" id="porcentajeCobertura">0%</div>
+            </div>
+            <div style="background: var(--verde-claro); padding: 15px; border-radius: 12px; text-align: center;">
+              <div style="font-size: 11px; color: var(--verde); font-weight: 700; text-transform: uppercase; margin-bottom: 5px;">Total Atendidos</div>
+              <div style="font-size: 24px; font-weight: 900; color: var(--verde);" id="totalAtendidosGrafica">0</div>
+            </div>
+            <div style="background: #fff3cd; padding: 15px; border-radius: 12px; text-align: center;">
+              <div style="font-size: 11px; color: #856404; font-weight: 700; text-transform: uppercase; margin-bottom: 5px;">Año</div>
+              <div style="font-size: 28px; font-weight: 900; color: #856404;" id="anioCobertura">2024</div>
+            </div>
+          </div>
+        </div>
+        <div style="text-align: center; padding: 20px;">
+          <div style="font-size: 72px; margin-bottom: 10px;">📊</div>
+          <p style="font-size: 14px; color: var(--gris-oscuro); line-height: 1.6;">
+            Esta gráfica muestra el porcentaje de la población total de Chihuahua que ha sido atendida a través de los programas sociales.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- TABLA DE GRUPOS VULNERABLES -->
+    <div class="grupos-section">
+      <h2 class="section-title">📋 Desglose por Grupo Vulnerable</h2>
+      <table class="grupos-table" id="gruposTable">
+        <thead>
+          <tr>
+            <th>Grupo Vulnerable</th>
+            <th style="text-align: center;">Población Potencial</th>
+            <th style="text-align: center;">Personas Atendidas</th>
+            <th style="text-align: center;">% Cobertura</th>
+            <th style="text-align: center;">Instituciones</th>
+          </tr>
+        </thead>
+        <tbody id="gruposTableBody">
+          <!-- Se llenará dinámicamente -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- GRÁFICA -->
+    <div class="chart-section">
+      <h2 class="section-title">📊 Porcentaje de Cobertura por Grupo</h2>
+      <div class="chart-wrapper">
+        <canvas id="gruposChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ==== PERSONAS ATENDIDAS MANUALMENTE POR AÑO ====
+const personasAtendidasManual = {
+  "2024": 890844, // ← aquí pones la cifra manual
+  "2025": 1290597  // ← aquí también
+};
+
+    // Datos de grupos vulnerables
+    const dataGruposVulnerables = {
+      "2024": [
+        { 
+          grupo: "Personas con inseguridad alimentaria", 
+          icono: "🥗",
+          PoblaciónPotencial: 384853,
+          personas: 299018, 
+          instituciones: 6
+        },
+        { 
+          grupo: "Personas en situación de pobreza", 
+          icono: "🏚️",
+          PoblaciónPotencial: 587293,
+          personas: 377346, 
+          instituciones: 9
+        },
+        { 
+          grupo: "Personas indígenas", 
+          icono: "🧑🏽‍🦳",
+          PoblaciónPotencial: 401195,
+          personas: 106593, 
+          instituciones: 3
+        },
+        { 
+          grupo: "Personas con discapacidad", 
+          icono: "♿",
+          PoblaciónPotencial: 423734,
+          personas: 22685, 
+          instituciones: 2
+        },
+        { 
+          grupo: "Familias vulnerables", 
+          icono: "👨‍👩‍👧‍👦",
+          PoblaciónPotencial: 400000,
+          personas: 2952, 
+          instituciones: 1
+        },
+        { 
+          grupo: "Niños, niñas y adolescentes (0-17 años)", 
+          icono: "👶",
+          PoblaciónPotencial: 430152,
+          personas: 157740, 
+          instituciones: 12
+        },
+        { 
+          grupo: "Juventudes (18-29 años)", 
+          icono: "🎓",
+          PoblaciónPotencial: 462954,
+          personas: 32135, 
+          instituciones: 12
+        },
+        { 
+          grupo: "Personas adultas (30-64 años)", 
+          icono: "👔",
+          PoblaciónPotencial: 752766,
+          personas: 50432, 
+          instituciones: 11
+        },
+        { 
+          grupo: "Adultos mayores (65+ años)", 
+          icono: "👴",
+          PoblaciónPotencial: 89300,
+          personas: 20300, 
+          instituciones: 10
+        },
+        { 
+          grupo: "Productores del campo", 
+          icono: "👨🏻‍🌾",
+          PoblaciónPotencial: 57128,
+          personas: 26150, 
+          instituciones: 1
+        },
+        { 
+          grupo: "Personas migrantes", 
+          icono: "🌎",
+          PoblaciónPotencial: 71261,
+          personas: 9742, 
+          instituciones: 1
+        },
+        { 
+          grupo: "Personas sin acceso a servicios de salud", 
+          icono: "🏥",
+          PoblaciónPotencial: 811766,
+          personas: 450734, 
+          instituciones: 1
+        },
+        { 
+          grupo: "Hombres en situación de vulnerabilidad", 
+          icono: "👨",
+          PoblaciónPotencial: 895792,
+          personas: 378919, 
+          instituciones: 12
+        },
+        { 
+          grupo: "Mujeres en situación de vulnerabilidad", 
+          icono: "👩",
+          PoblaciónPotencial: 896508,
+          personas: 505435, 
+          instituciones: 12
+        }
+      ],
+      "2025": [
+        { 
+          grupo: "Personas con inseguridad alimentaria", 
+          icono: "🥗",
+          PoblaciónPotencial: 384853,
+          personas: 413165, 
+          instituciones: 7
+        },
+        { 
+          grupo: "Personas en situación de pobreza", 
+          icono: "🏚️",
+          PoblaciónPotencial: 587300,
+          personas: 331249, 
+          instituciones: 10
+        },
+        { 
+          grupo: "Personas indígenas", 
+          icono: "🧑🏽‍🦳",
+          PoblaciónPotencial: 401195,
+          personas: 146375, 
+          instituciones: 3
+        },
+        { 
+          grupo: "Personas con discapacidad", 
+          icono: "♿",
+          PoblaciónPotencial: 423734,
+          personas: 17089, 
+          instituciones: 2
+        },
+        { 
+          grupo: "Familias vulnerables", 
+          icono: "👨‍👩‍👧‍👦",
+          PoblaciónPotencial: 400000,
+          personas: 3311, 
+          instituciones: 1
+        },
+        { 
+          grupo: "Niños, niñas y adolescentes (0-17 años)", 
+          icono: "👶",
+          PoblaciónPotencial: 430152,
+          personas: 31050, 
+          instituciones: 14
+        },
+        { 
+          grupo: "Juventudes (18-29 años)", 
+          icono: "🎓",
+          PoblaciónPotencial: 462954,
+          personas: 105739, 
+          instituciones: 14
+        },
+        { 
+          grupo: "Personas adultas (30-64 años)", 
+          icono: "👔",
+          PoblaciónPotencial: 752766,
+          personas: 379058, 
+          instituciones: 12
+        },
+        { 
+          grupo: "Adultos mayores (65+ años)", 
+          icono: "👴",
+          PoblaciónPotencial: 89300,
+          personas: 86594, 
+          instituciones: 11
+        },
+        { 
+          grupo: "Productores del campo", 
+          icono: "👨🏻‍🌾",
+          PoblaciónPotencial: 57128,
+          personas: 7781, 
+          instituciones: 1
+        },
+        { 
+          grupo: "Personas migrantes", 
+          icono: "🌎",
+          PoblaciónPotencial: 71261,
+          personas: 12268, 
+          instituciones: 1
+        },
+        { 
+          grupo: "Personas sin acceso a servicios de salud", 
+          icono: "🏥",
+          PoblaciónPotencial: 811766,
+          personas: 610552, 
+          instituciones: 1
+        },
+        { 
+          grupo: "Hombres en situación de vulnerabilidad", 
+          icono: "👨",
+          PoblaciónPotencial: 895792,
+          personas: 554489, 
+          instituciones: 14
+        },
+        { 
+          grupo: "Mujeres en situación de vulnerabilidad", 
+          icono: "👩",
+          PoblaciónPotencial: 896508,
+          personas:729224, 
+          instituciones: 14
+        }
+      ]
+    };
+
+    let currentYear = "2025";
+    let chartInstance = null;
+
+    // Función para formatear números
+    function formatNumber(num) {
+      return num.toLocaleString('es-MX');
+    }
+
+    // Renderizar tabla
+    function renderTable() {
+      const data = dataGruposVulnerables[currentYear];
+      const tbody = document.getElementById('gruposTableBody');
+      
+      tbody.innerHTML = data.map(item => {
+        const porcentajeCobertura = ((item.personas / item.PoblaciónPotencial) * 100).toFixed(1);
+        const coberturaClass = porcentajeCobertura >= 60 ? 'cobertura-alta' : 
+                              porcentajeCobertura >= 40 ? 'cobertura-media' : 
+                              'cobertura-baja';
+        
+        return `
+        <tr>
+          <td>
+            <span class="grupo-icon">${item.icono}</span>
+            ${item.grupo}
+          </td>
+          <td style="text-align: center; font-weight: 700; color: var(--gris-oscuro);">
+            ${formatNumber(item.PoblaciónPotencial)}
+          </td>
+          <td style="text-align: center;" class="numero-personas">
+            ${formatNumber(item.personas)}
+          </td>
+          <td style="text-align: center;">
+            <span class="cobertura-badge ${coberturaClass}">
+              ${porcentajeCobertura}%
+            </span>
+          </td>
+          <td style="text-align: center; font-weight: 700; color: var(--azul-prim);">
+            ${item.instituciones}
+          </td>
+        </tr>
+      `}).join('');
+
+     // === TOTAL MANUAL DE PERSONAS ATENDIDAS ===
+const total = personasAtendidasManual[currentYear] ?? 0;
+
+document.getElementById('totalAtendidos').textContent = formatNumber(total);
+document.getElementById('yearDesc').textContent = `en ${currentYear}`;
+updateCoberturaGeneral(total);
+
+    }
+    
+    // Actualizar cobertura Poblaciónal general
+    function updateCoberturaGeneral(totalAtendidos) {
+      const PoblaciónTotal = 1792300;
+      const porcentaje = ((totalAtendidos / PoblaciónTotal) * 100).toFixed(2);
+      
+      document.getElementById('personasAtendidas').textContent = formatNumber(totalAtendidos);
+      document.getElementById('porcentajeCobertura').textContent = porcentaje + '%';
+      document.getElementById('totalAtendidosGrafica').textContent = formatNumber(totalAtendidos);
+      document.getElementById('anioCobertura').textContent = currentYear;
+      
+      // Animar barra de progreso
+      const coberturaBar = document.getElementById('coberturaBar');
+      setTimeout(() => {
+        coberturaBar.style.width = porcentaje + '%';
+        coberturaBar.textContent = porcentaje + '%';
+      }, 100);
+    }
+
+    // Renderizar gráfica
+    function renderChart() {
+      const data = dataGruposVulnerables[currentYear];
+      const ctx = document.getElementById('gruposChart');
+
+      // Destruir gráfica anterior si existe
+      if (chartInstance) {
+        chartInstance.destroy();
+      }
+
+      // Calcular porcentaje de cobertura para cada grupo
+      const dataWithPercentage = data.map(item => ({
+        ...item,
+        porcentaje: ((item.personas / item.PoblaciónPotencial) * 100).toFixed(1)
+      }));
+
+      // Ordenar por porcentaje de cobertura (top 10)
+      const sortedData = [...dataWithPercentage].sort((a, b) => b.porcentaje - a.porcentaje).slice(0, 10);
+
+      chartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: sortedData.map(item => item.grupo),
+          datasets: [{
+            label: '% de Cobertura',
+            data: sortedData.map(item => item.porcentaje),
+            backgroundColor: sortedData.map(item => {
+              const pct = parseFloat(item.porcentaje);
+              if (pct >= 60) return '#28a745';
+              if (pct >= 40) return '#ffc107';
+              return '#dc3545';
+            }),
+            borderRadius: 8
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          indexAxis: 'y',
+          plugins: {
+            legend: {
+              display: false
+            },
+            title: {
+              display: true,
+              text: `Top 10 Grupos por % de Cobertura - ${currentYear}`,
+              font: {
+                size: 18,
+                weight: 'bold'
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const index = context.dataIndex;
+                  const item = sortedData[index];
+                  return [
+                    `Cobertura: ${context.parsed.x}%`,
+                    `Atendidos: ${formatNumber(item.personas)}`,
+                    `Potencial: ${formatNumber(item.PoblaciónPotencial)}`,
+                    `Instituciones: ${item.instituciones}`
+                  ];
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              beginAtZero: true,
+              max: 100,
+              ticks: {
+                callback: function(value) {
+                  return value + '%';
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // Event listener para cambio de año
+    document.getElementById('yearSelect').addEventListener('change', function(e) {
+      currentYear = e.target.value;
+      
+      // Resetear barra de cobertura antes de actualizar
+      const coberturaBar = document.getElementById('coberturaBar');
+      coberturaBar.style.transition = 'none';
+      coberturaBar.style.width = '0%';
+      coberturaBar.textContent = '0%';
+      
+      setTimeout(() => {
+        coberturaBar.style.transition = 'width 1s ease';
+        renderTable();
+        renderChart();
+      }, 50);
+    });
+
+    // NOTA: Inicialización movida al final después de aplicar valores manuales
+
+
+// ============================================
+// SISTEMA DE CONFIGURACIÓN MANUAL - GRUPOS VULNERABLES
+// ============================================
+
+let valoresManualesGrupos = {
+  '2024': {},
+  '2025': {}
+};
+
+// Lista de grupos disponibles (se debe mantener sincronizada con dataGruposVulnerables)
+const GRUPOS_LISTA = [
+  "Personas con inseguridad alimentaria",
+  "Personas en situación de pobreza",
+  "Personas indígenas",
+  "Personas con discapacidad",
+  "Familias vulnerables",
+  "Niños, niñas y adolescentes (0-17 años)",
+  "Juventudes (18-29 años)",
+  "Personas adultas (30-64 años)",
+  "Adultos mayores (65+ años)",
+  "Productores del campo",
+  "Personas migrantes",
+  "Personas sin acceso a servicios de salud",
+  "Hombres en situación de vulnerabilidad",
+  "Mujeres en situación de vulnerabilidad"
+];
+
+// Cargar valores guardados desde localStorage
+function cargarValoresManualesGrupos() {
+  try {
+    const guardados = localStorage.getItem('valoresManualesGrupos');
+    if (guardados) {
+      valoresManualesGrupos = JSON.parse(guardados);
+      console.log('📂 Valores de grupos vulnerables cargados desde localStorage');
+    }
+  } catch (e) {
+    console.error('Error cargando configuración grupos:', e);
+  }
+}
+
+// Guardar valores en localStorage
+function guardarValoresGrupos() {
+  try {
+    localStorage.setItem('valoresManualesGrupos', JSON.stringify(valoresManualesGrupos));
+    console.log('💾 Valores de grupos vulnerables guardados en localStorage');
+  } catch (e) {
+    console.error('Error guardando configuración grupos:', e);
+  }
+}
+
+// Obtener valor de un grupo
+function obtenerValorGrupo(anio, nombreGrupo, campo, valorAutomatico) {
+  if (!valoresManualesGrupos[anio] || !valoresManualesGrupos[anio][nombreGrupo]) {
+    return valorAutomatico;
+  }
+  const manual = valoresManualesGrupos[anio][nombreGrupo][campo];
+  return manual !== null && manual !== '' && manual !== undefined ? parseFloat(manual) : valorAutomatico;
+}
+
+// Mostrar modal de configuración
+function mostrarConfiguracionGrupos() {
+  const modal = document.createElement('div');
+  modal.id = 'configModalGrupos';
+  modal.style.cssText = `
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.85); z-index: 10000;
+    display: flex; justify-content: center; align-items: center; padding: 20px;
+    overflow-y: auto;
+  `;
+  
+  modal.innerHTML = `
+    <div style="background: white; border-radius: 20px; padding: 30px; max-width: 1400px; width: 100%; max-height: 95vh; overflow-y: auto; box-shadow: 0 25px 80px rgba(0,0,0,0.6);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 3px solid #0066cc; padding-bottom: 15px;">
+        <h2 style="font-size: 26px; font-weight: 900; color: #003f7f; margin: 0;">⚙️ Configuración Manual - Grupos Vulnerables</h2>
+        <button onclick="cerrarConfigGrupos()" style="background: #dc3545; color: white; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 14px;">✕ Cerrar</button>
+      </div>
+      
+      <div style="background: #e3f2fd; padding: 15px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid #0066cc;">
+        <p style="margin: 0; color: #003f7f; font-size: 14px; line-height: 1.6;">
+          <strong>💡 Instrucciones:</strong> Edita los valores numéricos de cada grupo vulnerable. Los campos vacíos usarán valores automáticos.
+        </p>
+      </div>
+      
+      <!-- SELECTORES -->
+      <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 15px; margin-bottom: 20px; background: #f8f9fa; padding: 20px; border-radius: 12px;">
+        <div>
+          <label style="display: block; font-weight: 700; color: #495057; margin-bottom: 8px; font-size: 13px;">📅 AÑO:</label>
+          <select id="anioConfigGrupo" onchange="actualizarFormularioGrupos()" style="width: 100%; padding: 10px; border: 2px solid #dee2e6; border-radius: 8px; font-weight: 700; font-size: 14px;">
+            <option value="2024">2024</option>
+            <option value="2025" selected>2025</option>
+          </select>
+        </div>
+        <div>
+          <label style="display: block; font-weight: 700; color: #495057; margin-bottom: 8px; font-size: 13px;">👥 GRUPO VULNERABLE:</label>
+          <select id="grupoConfigSelect" onchange="actualizarFormularioGrupos()" style="width: 100%; padding: 10px; border: 2px solid #dee2e6; border-radius: 8px; font-weight: 700; font-size: 14px;">
+            <option value="">Seleccionar...</option>
+            ${GRUPOS_LISTA.map(g => `<option value="${g}">${g}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+      
+      <!-- FORMULARIO -->
+      <div id="formularioGrupo" style="background: white; padding: 25px; border-radius: 12px; border: 2px solid #e0e0e0;">
+        <p style="color: #999; text-align: center; padding: 40px;">Selecciona año y grupo vulnerable</p>
+      </div>
+      
+      <div style="margin-top: 20px; border-top: 2px solid #dee2e6; padding-top: 20px; display: flex; justify-content: space-between; align-items: center;">
+        <button onclick="resetearTodoGrupos()" style="background: #dc3545; color: white; border: none; padding: 12px 25px; border-radius: 10px; font-weight: 700; cursor: pointer;">
+          🗑️ Resetear TODO
+        </button>
+        <div>
+          <button onclick="limpiarGrupoActual()" style="background: #ffc107; color: #333; border: none; padding: 12px 30px; border-radius: 10px; font-weight: 700; cursor: pointer; margin-right: 10px;">
+            🔄 Restaurar Automáticos
+          </button>
+          <button onclick="aplicarCambiosGrupos()" style="background: #28a745; color: white; border: none; padding: 12px 30px; border-radius: 10px; font-weight: 700; cursor: pointer; margin-right: 10px;">
+            ✅ Aplicar Cambios
+          </button>
+          <button onclick="cerrarConfigGrupos()" style="background: #6c757d; color: white; border: none; padding: 12px 30px; border-radius: 10px; font-weight: 700; cursor: pointer;">
+            ❌ Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(modal);
+}
+
+// Actualizar formulario según selección
+function actualizarFormularioGrupos() {
+  const anio = document.getElementById('anioConfigGrupo').value;
+  const nombreGrupo = document.getElementById('grupoConfigSelect').value;
+  const form = document.getElementById('formularioGrupo');
+  
+  if (!nombreGrupo) {
+    form.innerHTML = '<p style="color: #999; text-align: center; padding: 40px;">Selecciona año y grupo vulnerable</p>';
+    return;
+  }
+  
+  // Buscar el grupo en los datos originales
+  const grupoData = dataGruposVulnerables[anio].find(g => g.grupo === nombreGrupo);
+  if (!grupoData) {
+    form.innerHTML = '<p style="color: #999; text-align: center; padding: 40px;">Grupo no encontrado</p>';
+    return;
+  }
+  
+  // Inicializar estructura si no existe
+  if (!valoresManualesGrupos[anio][nombreGrupo]) {
+    valoresManualesGrupos[anio][nombreGrupo] = {
+      PoblaciónPotencial: null,
+      personas: null,
+      instituciones: null
+    };
+  }
+  
+  const valores = valoresManualesGrupos[anio][nombreGrupo];
+  
+  form.innerHTML = `
+    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 25px; padding-bottom: 20px; border-bottom: 2px solid #dee2e6;">
+      <div style="font-size: 48px;">${grupoData.icono}</div>
+      <div>
+        <h3 style="margin: 0 0 5px 0; color: #003f7f; font-size: 20px;">${grupoData.grupo}</h3>
+        <p style="margin: 0; color: #666; font-size: 13px;">Edita los valores numéricos del grupo</p>
+      </div>
+    </div>
+    
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+      ${[
+        { 
+          campo: 'PoblaciónPotencial', 
+          label: '👤 Población Potencial', 
+          auto: grupoData.PoblaciónPotencial,
+          descripcion: 'Total de personas que podrían beneficiarse'
+        },
+        { 
+          campo: 'personas', 
+          label: '✅ Personas Atendidas', 
+          auto: grupoData.personas,
+          descripcion: 'Número de personas efectivamente atendidas'
+        },
+        { 
+          campo: 'instituciones', 
+          label: '🏛️ Instituciones', 
+          auto: grupoData.instituciones,
+          descripcion: 'Cantidad de instituciones involucradas'
+        }
+      ].map(c => `
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; border: 1px solid #dee2e6;">
+          <label style="display: block; font-weight: 700; color: #495057; margin-bottom: 10px; font-size: 14px;">${c.label}</label>
+          <input type="number" step="1" 
+            value="${valores[c.campo] || ''}" 
+            placeholder="Auto: ${c.auto.toLocaleString('es-MX')}"
+            style="width: 100%; padding: 12px; border: 2px solid #dee2e6; border-radius: 8px; font-size: 16px; font-weight: 600;"
+            onchange="valoresManualesGrupos['${anio}']['${nombreGrupo}']['${c.campo}'] = this.value ? parseFloat(this.value) : null; guardarValoresGrupos();">
+          <small style="display: block; margin-top: 8px; color: #6c757d; font-size: 11px;">${c.descripcion}</small>
+          <small style="display: block; margin-top: 4px; color: #6c757d; font-size: 11px; font-weight: 600;">Dejar vacío = automático</small>
+        </div>
+      `).join('')}
+    </div>
+    
+    <div style="margin-top: 20px; padding: 15px; background: #d1ecf1; border-left: 4px solid #17a2b8; border-radius: 8px;">
+      <p style="margin: 0; color: #0c5460; font-size: 13px;">
+        <strong>ℹ️ Nota:</strong> Los porcentajes de cobertura se recalculan automáticamente basándose en estos valores.
+      </p>
+    </div>
+  `;
+}
+
+// Limpiar grupo actual
+function limpiarGrupoActual() {
+  const anio = document.getElementById('anioConfigGrupo').value;
+  const nombreGrupo = document.getElementById('grupoConfigSelect').value;
+  
+  if (!nombreGrupo) {
+    alert('⚠️ Selecciona un grupo primero');
+    return;
+  }
+  
+  if (confirm(`¿Restaurar valores automáticos para "${nombreGrupo}" - ${anio}?`)) {
+    delete valoresManualesGrupos[anio][nombreGrupo];
+    guardarValoresGrupos();
+    actualizarFormularioGrupos();
+    alert('✅ Valores automáticos restaurados');
+  }
+}
+
+// Resetear TODO
+function resetearTodoGrupos() {
+  if (confirm('⚠️ ¿Estás seguro de resetear TODOS los valores manuales de Grupos Vulnerables?\n\nEsta acción NO se puede deshacer.')) {
+    if (confirm('🔴 ÚLTIMA CONFIRMACIÓN:\n¿Resetear TODO y volver a valores automáticos?')) {
+      localStorage.removeItem('valoresManualesGrupos');
+      alert('✅ TODO reseteado. Recargando página...');
+      location.reload();
+    }
+  }
+}
+
+// Aplicar cambios y recargar
+function aplicarCambiosGrupos() {
+  guardarValoresGrupos();
+  cerrarConfigGrupos();
+  alert('✅ Cambios guardados. Recargando página...');
+  location.reload();
+}
+
+// Cerrar modal
+function cerrarConfigGrupos() {
+  const modal = document.getElementById('configModalGrupos');
+  if (modal) modal.remove();
+}
+
+// Aplicar valores manuales globalmente
+function aplicarValoresManualesGruposGlobal() {
+  console.log('🔧 Aplicando valores manuales de grupos vulnerables...');
+  
+  ['2024', '2025'].forEach(anio => {
+    if (dataGruposVulnerables[anio]) {
+      dataGruposVulnerables[anio] = dataGruposVulnerables[anio].map(grupo => {
+        const nombreGrupo = grupo.grupo;
+        
+        if (valoresManualesGrupos[anio] && valoresManualesGrupos[anio][nombreGrupo]) {
+          const valores = valoresManualesGrupos[anio][nombreGrupo];
+          
+          if (valores.PoblaciónPotencial !== null && valores.PoblaciónPotencial !== undefined) {
+            grupo.PoblaciónPotencial = parseFloat(valores.PoblaciónPotencial);
+          }
+          if (valores.personas !== null && valores.personas !== undefined) {
+            grupo.personas = parseFloat(valores.personas);
+          }
+          if (valores.instituciones !== null && valores.instituciones !== undefined) {
+            grupo.instituciones = parseFloat(valores.instituciones);
+          }
+        }
+        
+        return grupo;
+      });
+    }
+  });
+  
+  console.log('✅ Valores manuales de grupos vulnerables aplicados correctamente');
+}
+
+// Atajos de teclado
+console.log('🔑 Registrando atajos de teclado para Grupos Vulnerables...');
+document.addEventListener('keydown', function(e) {
+  if (e.ctrlKey && e.shiftKey && e.key === 'E') {
+    e.preventDefault();
+    console.log('✅ Ctrl+Shift+E detectado, abriendo configuración de grupos...');
+    mostrarConfiguracionGrupos();
+  }
+  if (e.ctrlKey && e.altKey && e.key === 'c') {
+    e.preventDefault();
+    console.log('✅ Ctrl+Alt+C detectado, abriendo configuración de grupos...');
+    mostrarConfiguracionGrupos();
+  }
+});
+
+// Código secreto "config"
+let secretCodeGrupos = [];
+let secretTimerGrupos = null;
+document.addEventListener('keypress', function(e) {
+  secretCodeGrupos.push(e.key.toLowerCase());
+  clearTimeout(secretTimerGrupos);
+  secretTimerGrupos = setTimeout(() => secretCodeGrupos = [], 2000);
+  if (secretCodeGrupos.join('') === 'config') {
+    mostrarConfiguracionGrupos();
+    secretCodeGrupos = [];
+  }
+});
+
+// Triple clic en breadcrumb
+document.addEventListener('DOMContentLoaded', function() {
+  setTimeout(() => {
+    const title = document.querySelector('h1, .page-title');
+    if (title) {
+      let clickCount = 0;
+      let clickTimer = null;
+      title.addEventListener('click', () => {
+        clickCount++;
+        if (clickCount === 3) {
+          mostrarConfiguracionGrupos();
+          clickCount = 0;
+        }
+        clearTimeout(clickTimer);
+        clickTimer = setTimeout(() => clickCount = 0, 500);
+      });
+      title.style.cursor = 'pointer';
+    }
+  }, 1000);
+});
+
+// Inicializar al cargar la página
+console.log('📂 Cargando valores de grupos vulnerables desde localStorage...');
+cargarValoresManualesGrupos();
+console.log('🚀 Iniciando aplicación de valores de grupos vulnerables...');
+aplicarValoresManualesGruposGlobal();
+
+// Verificar que la función está definida
+if (typeof mostrarConfiguracionGrupos === 'function') {
+  console.log('✅ Función mostrarConfiguracionGrupos está definida correctamente');
+} else {
+  console.error('❌ ERROR: Función mostrarConfiguracionGrupos NO está definida');
+}
+
+// Re-aplicar al cargar el DOM
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('🎨 Aplicando valores manuales de grupos en DOMContentLoaded...');
+  aplicarValoresManualesGruposGlobal();
+  
+  // Renderizar tabla y gráficas DESPUÉS de aplicar valores manuales
+  console.log('📊 Renderizando tabla y gráficas con valores actualizados...');
+  renderTable();
+  renderChart();
+  console.log('✅ Tabla y gráficas renderizadas correctamente');
+  
+  // Verificar nuevamente después del DOM
+  if (typeof mostrarConfiguracionGrupos === 'function') {
+    console.log('✅ DOMContentLoaded: Función mostrarConfiguracionGrupos disponible');
+  }
+});
+
+
+  </script>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div class="footer-content">
+      <div class="footer-title">ℹ️ Información del Sistema</div>
+      <div class="footer-grid">
+        <div class="footer-section">
+          <h3>📊 Datos y Fuentes</h3>
+          <p>Información proporcionada por las instituciones del Gobierno del Estado de Chihuahua. Datos actualizados correspondientes a los ejercicios fiscales 2024 y 2025.</p>
+        </div>
+        <div class="footer-section">
+          <h3>🎯 Objetivo</h3>
+          <p>Este sistema proporciona un análisis integral de los programas sociales implementados en el estado, facilitando la toma de decisiones basada en datos.</p>
+        </div>
+        <div class="footer-section">
+          <h3>📅 Actualización</h3>
+          <p>Sistema actualizado: Diciembre 2025<br>Próxima actualización: Trimestral</p>
+        </div>
+      </div>
+      <div class="footer-legend">
+        <p><strong>Gobierno del Estado de Chihuahua</strong> | Sistema de Programas Sociales | © 2025</p>
+        <p>Para más información, contactar a la Secretaría de Desarrollo Humano y Bien Común</p>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,2677 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script>
+  // Detecta si el dispositivo es móvil
+  const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  const viewport = document.querySelector("meta[name=viewport]");
+
+  // Configuración base: modo escritorio simulado
+  viewport.setAttribute(
+    "content",
+    "width=1280, initial-scale=0.30, minimum-scale=0.30, maximum-scale=0.60"
+  );
+
+  // Permitir zoom manual en cualquier dispositivo
+  if (isMobile) {
+    // En móviles, reinyecta viewport cuando el usuario hace pinch zoom
+    document.addEventListener("gesturestart", function () {
+      viewport.setAttribute(
+        "content",
+        "width=1280, minimum-scale=0.30, maximum-scale=0.70"
+      );
+    });
+  } else {
+    // En PC, permitir ctrl + scroll (zoom del navegador)
+    document.addEventListener("wheel", function (e) {
+      if (e.ctrlKey) {
+        e.preventDefault(); // evita saltos extraños
+      }
+    }, { passive: false });
+  }
+</script>
+  <title>Mapa de Cobertura Estatal - Gobierno de Chihuahua</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+  <style>
+    :root{
+      --azul-prim:#003f7f;
+      --azul-sec:#0066cc;
+      --azul-claro:#e3f2fd;
+      --verde:#28a745;
+      --verde-claro:#d4edda;
+      --amarillo:#ffc107;
+      --naranja:#ff9800;
+      --rojo:#dc3545;
+      --rojo-claro:#f8d7da;
+      --gris-borde:#dee2e6;
+      --gris-card:#f8f9fa;
+      --gris-oscuro:#495057;
+      --texto:#212529;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    }
+    
+    body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7474bf 100%);
+            background-attachment: fixed;
+            position: relative;
+            color: #212529;
+            line-height: 1.6;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+       body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    animation: patternMove 60s linear infinite;
+}
+
+
+        @keyframes patternMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(60px, 60px); }
+        }
+
+    
+    
+    .leaflet-container {
+      background:linear-gradient(135deg,var(--azul-sec) 0%,var(--azul-prim) 100%);
+    }
+
+            /* Partículas flotantes */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            animation: float 20s infinite;
+        }
+
+        .particle:nth-child(1) { left: 10%; animation-delay: 0s; animation-duration: 25s; }
+        .particle:nth-child(2) { left: 20%; animation-delay: 2s; animation-duration: 20s; }
+        .particle:nth-child(3) { left: 30%; animation-delay: 4s; animation-duration: 22s; }
+        .particle:nth-child(4) { left: 40%; animation-delay: 1s; animation-duration: 24s; }
+        .particle:nth-child(5) { left: 50%; animation-delay: 3s; animation-duration: 21s; }
+        .particle:nth-child(6) { left: 60%; animation-delay: 5s; animation-duration: 23s; }
+        .particle:nth-child(7) { left: 70%; animation-delay: 2.5s; animation-duration: 26s; }
+        .particle:nth-child(8) { left: 80%; animation-delay: 1.5s; animation-duration: 19s; }
+        .particle:nth-child(9) { left: 90%; animation-delay: 3.5s; animation-duration: 27s; }
+        .particle:nth-child(10) { left: 15%; animation-delay: 4.5s; animation-duration: 18s; }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) scale(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100vh) scale(1);
+                opacity: 0;
+            }
+        }
+
+
+    /* =================== LAYOUT CORREGIDO =================== */
+    
+    #main-wrapper {
+        display: flex;
+        flex-direction: column;
+        min-height: calc(100vh - 40px);
+        max-width: 100%;
+    }
+    
+    .main-header {
+      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        color: #fff;
+        padding: 25px 40px;
+        display: flex;
+        align-items: center;
+        gap: 25px;
+        box-shadow: 0 10px 40px rgba(30, 60, 114, 0.4);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .main-header::before {
+      content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: 
+            radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+        animation: headerPulse 8s ease-in-out infinite;
+    }
+    
+    @keyframes headerPulse {
+        0%, 100% { opacity: 0.5; }
+        50% { opacity: 1; }
+    }
+    
+    .main-header::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, 
+            #00bcd4 0%,   /* Cyan */
+            #4caf50 50%,  /* Verde */
+            #ff9800 100%  /* Naranja */
+        );
+        animation: shimmer 3s ease-in-out infinite;
+        z-index: 2;
+    }
+    
+    @keyframes shimmer {
+        0%, 100% { opacity: 0.6; }
+        50% { opacity: 1; }
+    }
+    
+    .main-header img {
+        width: 220px;
+        height: auto;
+        background: #fff;
+        border-radius: 12px;
+        padding: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        position: relative;
+        z-index: 1;
+    }
+    
+    .main-header-content {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .main-header-code {
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.8px;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        padding: 5px 14px;
+        border-radius: 25px;
+        display: inline-block;
+        margin-bottom: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        align-self: flex-start;
+    }
+    
+    .main-header h1 {
+        font-size: 28px;
+        font-weight: 900;
+        line-height: 1.3;
+        margin: 0 0 6px 0;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        letter-spacing: -0.5px;
+    }
+    
+    .main-header .subtitle {
+        font-size: 14px;
+        opacity: 0.95;
+        font-weight: 500;
+        margin: 0;
+    }
+    
+    #content-wrapper {
+        display: flex;
+        flex: 1;
+        overflow: hidden;
+        gap: 0;
+    }
+    
+    #container {
+        display: none !important;
+    }
+    
+    .panel-header {
+        display: none !important;
+    }
+    
+    #info-panel {
+        width: 420px;
+        min-width: 420px;
+        background:             radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
+        display: flex;
+        flex-direction: column;
+        z-index: 10;
+        overflow-y: auto;
+    }
+    
+    #map-container {
+        flex: 1;
+        position: sticky;
+        background: #f5f5f5;
+        border-radius: 0 0 15px 0;
+        max-height: 700px;
+        min-height: 500px;
+    }
+    
+    #map {
+        width: 100% !important;
+        height: 100% !important;
+    }
+    
+    .footer {
+        background: linear-gradient(135deg, #003f7f 0%, #002a56 100%);
+        color: #fff;
+        padding: 30px 40px;
+        margin-top: 0;
+        border-radius: 0 0 15px 15px;
+    }
+
+    .container {
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+    
+    /* PANEL LATERAL */
+    #info-panel {
+      width: 550px;
+      background:linear-gradient(135deg,var(--azul-sec) 0%,var(--azul-prim) 100%);
+      box-shadow: -8px 0 30px rgba(0, 0, 0, 0.15);
+      display: flex;
+      flex-direction: column;
+      z-index: 10;
+      position: relative;
+    }
+    
+    /* HEADER */
+    .panel-header {
+      background:linear-gradient(135deg,var(--azul-sec) 0%,var(--azul-prim) 100%);
+      color:#fff;
+      padding:25px 40px;
+      display:flex;
+      align-items:center;
+      gap:25px;
+      box-shadow:0 6px 20px rgba(0,0,0,.2);
+      position:relative;
+      overflow:hidden;
+    }
+    
+    .panel-header::before {
+      content:'';
+      position:absolute;
+      top:-50%;
+      right:-10%;
+      width:60%;
+      height:200%;
+      background:radial-gradient(circle,rgba(255,255,255,.1) 0%,transparent 70%);
+      transform:rotate(15deg);
+    }
+    
+    .panel-header img {
+       width:220px;
+      height:auto;
+      background:#fff;
+      border-radius:12px;
+      padding:12px;
+      box-shadow:0 4px 12px rgba(0,0,0,.2);
+      position:relative;
+      z-index:1;
+    }
+    
+    .panel-headings {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .program-code {
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.8px;
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
+      padding: 5px 14px;
+      border-radius: 25px;
+      display: inline-block;
+      margin-bottom: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      align-self: flex-start;
+    }
+    
+    h1 {
+      font-size: 20px;
+      font-weight: 900;
+      line-height: 1.3;
+      margin-bottom: 6px;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      letter-spacing: -0.5px;
+    }
+    
+    .subtitle {
+      font-size: 13px;
+      opacity: 0.95;
+      font-weight: 500;
+    }
+    
+    /* CONTENIDO */
+    .panel-content {
+      padding: 25px;
+      overflow-y: auto;
+      flex: 1;
+      background: linear-gradient(135deg,var(--azul-sec) 0%,var(--azul-prim) 100%);
+    }
+    
+    /* CONTROLES */
+    .controls {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      margin-bottom: 20px;
+      background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      border: 2px solid var(--gris-borde);
+    }
+    
+    .controls-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    
+    .controls label {
+      font-size: 12px;
+      color: #000;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      min-width: 90px;
+      flex-shrink: 0;
+    }
+    
+    select {
+      border: 2px solid var(--gris-borde);
+      border-radius: 12px;
+      padding: 12px 16px;
+      background: #fff;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      color: var(--texto);
+      flex: 1;
+      min-width: 0;
+      max-width: 100%;
+    }
+    
+    select:hover {
+      border-color: var(--azul-sec);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0, 102, 204, 0.2);
+    }
+    
+    select:focus {
+      outline: none;
+      border-color: var(--azul-prim);
+      box-shadow: 0 0 0 4px rgba(0, 63, 127, 0.15);
+    }
+    
+    /* ESTADÍSTICAS */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      margin: 20px 0;
+    }
+    
+    .stat-card {
+      background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+      border: 2px solid #d0e0f7;
+      border-radius: 16px;
+      padding: 20px;
+      text-align: center;
+      transition: all 0.4s ease;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -50%;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+    }
+    
+    .stat-card:hover {
+      transform: translateY(-6px) scale(1.02);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+    }
+    
+    .stat-value {
+      font-size: 32px;
+      font-weight: 900;
+      color: #0d47a1;
+      display: block;
+      margin-bottom: 8px;
+      position: relative;
+      z-index: 1;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .stat-label {
+      font-size: 11px;
+      letter-spacing: 0.6px;
+      color: #1e88e5;
+      text-transform: uppercase;
+      font-weight: 700;
+      position: relative;
+      z-index: 1;
+    }
+    
+    /* SECCIONES */
+    .legend-section, .ausentes-section, .municipality-section {
+      margin: 25px 0;
+      background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+      border-radius: 18px;
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      border: 2px solid var(--gris-borde);
+    }
+    
+    .section-title {
+      font-size: 16px;
+      font-weight: 900;
+      color: var(--azul-prim);
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      padding-bottom: 12px;
+      border-bottom: 3px solid var(--gris-borde);
+    }
+    
+    .section-title::before {
+      content: "";
+      width: 5px;
+      height: 24px;
+      background: linear-gradient(180deg, var(--azul-sec), var(--azul-prim));
+      border-radius: 3px;
+      box-shadow: 0 2px 8px rgba(0, 102, 204, 0.3);
+    }
+    
+    /* GRADIENTE */
+    .gradient-bar {
+      height: 32px;
+      border-radius: 8px;
+      background: linear-gradient(90deg, #ff0000 0%, #ffff00 50%, #00ff00 100%);
+      border: 2px solid var(--gris-borde);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      margin: 15px 0;
+    }
+    
+    .gradient-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: #000;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 8px;
+    }
+    
+    .beneficiarios-total {
+      text-align: center;
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--azul-prim);
+      margin-top: 15px;
+      padding: 12px;
+      background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+      border-radius: 8px;
+      border: 2px solid #d0e0f7;
+    }
+    
+    .leyenda-noident {
+      text-align: center;
+      margin-top: 12px;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 12px;
+      border-radius: 8px;
+      border: 2px solid;
+      transition: all 0.3s ease;
+      animation: fadeIn 0.5s ease;
+    }
+    
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    /* MUNICIPIOS AUSENTES */
+    .ausentes-content {
+      background: linear-gradient(135deg, #fff3cd, #ffe8a1);
+      border: 2px solid var(--amarillo);
+      border-left: 6px solid var(--naranja);
+      border-radius: 12px;
+      padding: 16px;
+      font-size: 13px;
+      line-height: 1.7;
+      color: #856404;
+      max-height: 180px;
+      overflow-y: auto;
+      box-shadow: 0 4px 12px rgba(255, 193, 7, 0.2);
+    }
+    
+    .ausentes-content.vacio {
+      background: linear-gradient(135deg, #d4edda, #c3e6cb);
+      border-color: var(--verde);
+      border-left-color: var(--verde);
+      color: #155724;
+      box-shadow: 0 4px 12px rgba(40, 167, 69, 0.2);
+    }
+    
+    .ausentes-content strong {
+      color: #d32f2f;
+      font-weight: 800;
+    }
+    
+    .ausentes-content.vacio strong {
+      color: #155724;
+    }
+    
+    /* LISTA DE MUNICIPIOS */
+    .municipality-list {
+      max-height: 40vh;
+      overflow-y: auto;
+    }
+    
+    .municipality-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+      border: 2px solid var(--gris-borde);
+      border-left: 5px solid transparent;
+      border-radius: 12px;
+      padding: 14px 18px;
+      margin: 10px 0;
+      font-size: 13px;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      cursor: pointer;
+    }
+    
+    .municipality-item:hover {
+      transform: translateX(6px) scale(1.02);
+      box-shadow: 0 6px 16px rgba(0, 102, 204, 0.2);
+      border-color: var(--azul-sec);
+      background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    }
+    
+    .municipality-item:active {
+      transform: translateX(6px) scale(0.98);
+    }
+    
+    .municipality-item strong {
+      font-size: 16px;
+      font-weight: 900;
+      color: var(--azul-prim);
+    }
+    
+    .municipality-item span {
+      font-weight: 700;
+      color: #000;
+    }
+    
+    /* FOOTER */
+    .panel-footer {
+      margin-top: auto;
+      padding: 20px 30px;
+      background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+      border-top: 4px solid var(--gris-borde);
+      font-size: 12px;
+      color: #000;
+      text-align: center;
+      font-weight: 600;
+      box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08);
+    }
+    
+    .panel-footer strong {
+      color: var(--azul-prim);
+      font-weight: 800;
+    }
+    
+    /* SCROLLBAR PERSONALIZADO */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 10px;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(135deg, var(--azul-sec), var(--azul-prim));
+      border-radius: 10px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--azul-prim);
+    }
+    
+    /* TOOLTIPS DEL MAPA */
+    .leaflet-tooltip {
+      background: rgba(0, 63, 127, 0.95) !important;
+      border: 2px solid #fff !important;
+      border-radius: 10px !important;
+      padding: 10px 14px !important;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3) !important;
+      color: #fff !important;
+      font-weight: 700 !important;
+      font-size: 13px !important;
+      backdrop-filter: blur(10px) !important;
+    }
+    
+    .leaflet-tooltip strong {
+      font-size: 15px !important;
+      display: block !important;
+      margin-bottom: 4px !important;
+      color: #ffeb3b !important;
+    }
+    
+    /* ANIMACIONES */
+    @keyframes pulse {
+      0%, 100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.05);
+      }
+    }
+    
+    .stat-card:hover .stat-value {
+      animation: pulse 0.6s ease infinite;
+    }
+    
+    /* RESPONSIVE */
+    @media (max-width: 1024px) {
+      #info-panel {
+        width: 450px;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      #container {
+        flex-direction: column;
+      }
+      
+      #info-panel {
+        width: 100%;
+        height: 50vh;
+      }
+      
+      #map {
+        height: 50vh;
+      }
+      
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  
+    /* ========================================== */
+    
+    /* =================== HEADER NUEVO DISEÑO =================== */
+    .header {
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        color: #fff;
+        padding: 25px 40px;
+        display: flex;
+        align-items: center;
+        gap: 25px;
+        box-shadow: 0 10px 40px rgba(30, 60, 114, 0.4);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: 
+            radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+        animation: headerPulse 8s ease-in-out infinite;
+    }
+
+    @keyframes headerPulse {
+        0%, 100% { opacity: 0.5; }
+        50% { opacity: 1; }
+    }
+
+    .header::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, 
+            #00bcd4 0%,   /* Cyan */
+            #4caf50 50%,  /* Verde */
+            #ff9800 100%  /* Naranja */
+        );
+        animation: shimmer 3s ease-in-out infinite;
+        z-index: 2;
+    }
+
+    @keyframes shimmer {
+        0%, 100% { opacity: 0.6; }
+        50% { opacity: 1; }
+    }
+
+    .header img {
+        width: 220px;
+        height: auto;
+        background: #fff;
+        border-radius: 12px;
+        padding: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        position: relative;
+        z-index: 1;
+        transition: transform 0.3s ease;
+    }
+
+    .header img:hover {
+        transform: scale(1.05);
+    }
+
+    .header-content {
+        flex: 1;
+        position: relative;
+        z-index: 1;
+    }
+
+    .header h1 {
+        font-size: 32px;
+        font-weight: 900;
+        margin: 0 0 8px 0;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        letter-spacing: -0.5px;
+    }
+
+    .header p,
+    .subtitle {
+        font-size: 15px;
+        opacity: 0.95;
+        font-weight: 500;
+        margin: 0;
+    }
+
+
+    /* DIVISOR MULTICOLOR */
+    /* ========================================== */
+    
+    .header::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, 
+        #00bcd4 0%,   /* Cyan */
+        #4caf50 50%,  /* Verde */
+        #ff9800 100%  /* Naranja */
+      );
+      animation: shimmer 3s ease-in-out infinite;
+      z-index: 2;
+    }
+
+    @keyframes shimmer {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+
+    /* ========================================== */
+    /* FOOTER */
+    /* ========================================== */
+    
+    .footer {
+      background: linear-gradient(135deg, #003f7f 0%, #002a56 100%);
+      color: #fff;
+      padding: 30px 40px;
+      margin-top: 40px;
+      border-radius: 15px 15px 0 0;
+      box-shadow: 0 -4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .footer-content {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    
+    .footer-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 15px;
+      color: #fff;
+      border-bottom: 2px solid rgba(255,255,255,0.3);
+      padding-bottom: 10px;
+    }
+    
+    .footer-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 25px;
+      margin-top: 20px;
+    }
+    
+    .footer-section {
+      background: rgba(255,255,255,0.1);
+      padding: 20px;
+      border-radius: 10px;
+      backdrop-filter: blur(10px);
+    }
+    
+    .footer-section h3 {
+      font-size: 16px;
+      font-weight: 600;
+      margin: 0 0 12px 0;
+      color: #fff;
+    }
+    
+    .footer-section p {
+      font-size: 14px;
+      line-height: 1.6;
+      margin: 0;
+      opacity: 0.9;
+    }
+    
+    .footer-legend {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255,255,255,0.3);
+      text-align: center;
+      font-size: 13px;
+      opacity: 0.8;
+    }
+    
+
+  </style>
+</head>
+<body>
+    <!-- Partículas flotantes -->
+    <div class="particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
+    <div id="main-wrapper">
+        <!-- HEADER PRINCIPAL COMPLETO -->
+            <div class="header">
+  <!-- LOGO IZQUIERDO -->
+  <img src="https://apps2018.cobachih.edu.mx/assets/images/footerimg/LOGO%20GOBIERNO%20COLOR.png" alt="Gobierno del Estado de Chihuahua">
+
+  <div class="header-content">
+    <h1>📊 Cobertura Estatal</h1>
+    <p>Implementaciones de programas a nivel estatal</p>
+  </div>
+
+  <!-- LOGO DERECHO -->
+  <img src="https://sds.chihuahua.gob.mx/sisco/imagenes/logovertical.png"
+       alt="Logo SEDHBC"
+       class="logo-der">
+</div>
+
+        <!-- CONTENEDOR DE PANEL Y MAPA -->
+        <div id="content-wrapper">
+            <!-- PANEL LATERAL IZQUIERDO -->
+            <div id="info-panel">
+                <div class="panel-content">
+<!-- CONTROLES -->
+        <div class="controls">
+          <div class="controls-row">
+            <label for="yearSelect">📅 Año:</label>
+            <select id="yearSelect">
+        <option value="2024">2024</option>
+        <option value="2025" selected>2025</option>
+      </select>
+          </div>
+          <div class="controls-row">
+            <label for="institutionSelect">🏛️ Institución:</label>
+            <select id="institutionSelect"></select>
+          </div>
+          <div class="controls-row">
+            <label for="programSelect">📋 Programa:</label>
+            <select id="programSelect"></select>
+          </div>
+        </div>
+
+        <!-- ESTADÍSTICAS -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <span id="statTotal" class="stat-value">–</span>
+            <span class="stat-label">Total beneficiarios únicos</span>
+          </div>
+          <div class="stat-card">
+            <span id="statMunicipios" class="stat-value">–</span>
+            <span class="stat-label">Municipios con cobertura</span>
+          </div>
+          <div class="stat-card">
+            <span id="statCobertura" class="stat-value">–</span>
+            <span class="stat-label">Cobertura territorial</span>
+          </div>
+          <div class="stat-card">
+            <span id="statCapital" class="stat-value">–</span>
+            <span class="stat-label">Concentración capital</span>
+          </div>
+        </div>
+
+        <!-- LEYENDA -->
+        <div class="legend-section">
+          <h3 class="section-title">Escala de intensidad</h3>
+          <div class="gradient-bar"></div>
+          <div class="gradient-labels">
+            <span>Mínima</span>
+            <span>Media</span>
+            <span>Máxima</span>
+          </div>
+          <div id="benefTotal" class="beneficiarios-total"></div>
+        </div>
+
+        <!-- MUNICIPIOS AUSENTES -->
+        <div class="ausentes-section">
+          <h3 class="section-title">Municipios sin cobertura</h3>
+          <div id="municipiosAusentes" class="ausentes-content"></div>
+        </div>
+
+        <!-- LISTA DE MUNICIPIOS -->
+        <div class="municipality-section">
+          <h3 class="section-title">Distribución por municipio</h3>
+          <div class="municipality-list" id="municipalityList"></div>
+        </div>
+                </div>
+            </div>
+            
+            <!-- MAPA A LA DERECHA -->
+            <div id="map-container">
+                <div id="map"></div>
+            </div>
+        </div>
+
+        <!-- FOOTER -->
+  <div class="footer">
+    <div class="footer-content">
+      <div class="footer-title">ℹ️ Información del Sistema</div>
+      <div class="footer-grid">
+        <div class="footer-section">
+          <h3>📊 Datos y Fuentes</h3>
+          <p>Información proporcionada por las instituciones del Gobierno del Estado de Chihuahua. Datos actualizados correspondientes a los ejercicios fiscales 2024 y 2025.</p>
+        </div>
+        <div class="footer-section">
+          <h3>🎯 Objetivo</h3>
+          <p>Este sistema proporciona un análisis integral de los programas sociales implementados en el estado, facilitando la toma de decisiones basada en datos.</p>
+        </div>
+        <div class="footer-section">
+          <h3>📅 Actualización</h3>
+          <p>Sistema actualizado: Diciembre 2025<br>Próxima actualización: Trimestral</p>
+        </div>
+      </div>
+      <div class="footer-legend">
+        <p><strong>Gobierno del Estado de Chihuahua</strong> | Sistema de Programas Sociales | © 2025</p>
+        <p>Para más información, contactar a la Secretaría de Desarrollo Humano y Bien Común</p>
+      </div>
+    </div>
+  </div>
+
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <script>
+    // ===== DATASET POR AÑO =====
+    const data = {
+      "2024": [
+        // ===== ICHIJUV =====
+        {codigo:"1S022A1",nombre:"Impulsando juventudes",institucion:"ICHIJUV",total:3515,data:{
+          "AHUMADA":1,"ALDAMA":23,"ALLENDE":3,"AQUILES SERDAN":15,"ASCENSION":1,"BACHINIVA":4,"BALLEZA":4,"BATOPILAS":2,"BUENAVENTURA":1,
+          "BOCOYNA":38,"BUENAVENTURA":10,"CAMARGO":144,"CASAS GRANDES":8,"CHIHUAHUA":1911,"CHINIPAS":8,"CORONADO":1,"COYAME DEL SOTOL":2,
+          "CUAUHTEMOC":193,"CUSIHUIRIACHI":3,"DELICIAS":161,"DR. BELISARIO DOMINGUEZ":1,"GALEANA":2,"GOMEZ FARIAS":8,"GUACHOCHI":62,
+          "GUADALUPE Y CALVO":2,"GUAZAPARES":7,"GUERRERO":50,"HIDALGO DEL PARRAL":207,"IGNACIO ZARAGOZA":4,"JANOS":1,"JIMENEZ":51,"JUAREZ":319,
+          "JULIMES":2,"LA CRUZ":6,"LOPEZ":3,"MADERA":97,"MATACHI":4,"MEOQUI":43,"MORELOS":1,"MORIS":1,"NAMIQUIPA":38,"NONOAVA":2,
+          "NUEVO CASAS GRANDES":24,"OCAMPO":2,"OJINAGA":3,"ROSALES":15,"SAN FRANCISCO DE BORJA":2,"SAN FRANCISCO DE CONCHOS":3,
+          "SAN FRANCISCO DEL ORO":1,"SANTA BARBARA":6,"SANTA ISABEL":2,"SATEVO":1,"SAUCILLO":14,"TEMOSACHIC":5,"URIQUE":3
+        }},
+        {codigo:"2P026L2",nombre:"Institucionalización de la perspectiva de las juventudes",institucion:"ICHIJUV",total:1445,data:{
+          "BATOPILAS":2,"CAMARGO":4,"CHIHUAHUA":1366,"CUAUHTEMOC":5,"DELICIAS":4,"HIDALGO DEL PARRAL":4,"JUAREZ":61,"MADERA":2,"NUEVO CASAS GRANDES":1
+        }},
+        {codigo:"2E029C1",nombre:"Atención a la juventud",institucion:"ICHIJUV",total:29214,data:{
+          "ALDAMA":34,"ALLENDE":89,"BATOPILAS":38,"BOCOYNA":286,"CAMARGO":516,"CHIHUAHUA":15735,"CORONADO":2,"CUAUHTEMOC":215,"DELICIAS":384,
+          "EL TULE":11,"GALEANA":25,"GUACHOCHI":808,"GUADALUPE Y CALVO":1080,"GUAZAPARES":581,"GUERRERO":411,"HIDALGO DEL PARRAL":5186,
+          "JANOS":6,"JIMENEZ":99,"JUAREZ":6738,"LA CRUZ":11,"MADERA":247,"MATAMOROS":3,"MEOQUI":14,"NONOAVA":1,"NUEVO CASAS GRANDES":68,"OJINAGA":7,
+          "ROSALES":5,"ROSARIO":7,"SAN FRANCISCO DE BORJA":34,"SAN FRANCISCO DE CONCHOS":5,"SANTA BARBARA":136
+        }},
+
+        // ===== SPCI =====
+        {codigo:"1S035A1",nombre:"Asistencia social para la población indígena",institucion:"SPCI",total:5702,
+         excluded:["AHOME","DURANGO","EL ORO","GUASAVE","MEZQUITIC","TEMASCALCINGO","YECORA","TIJUANA","CAJEME","BCS","EL FUERTE","EL TULE","CD MEXICO"],
+         data:{
+          "AHUMADA":9,"ALDAMA":19,"ALLENDE":7,"AQUILES SERDAN":4,"ASCENSION":1,"BACHINIVA":2,"BALLEZA":277,
+          "BATOPILAS":229,"BOCOYNA":499,"BUENAVENTURA":22,"CAMARGO":24,"CARICHI":120,"CASAS GRANDES":5,"CHIHUAHUA":1267,
+          "CHILAPA DE ALVAREZ":1,"CHINIPAS":26,"CUAUHTEMOC":271,"CUSIHUIRIACHI":10,"DELICIAS":6,"DR. BELISARIO DOMINGUEZ":5,
+          "EL TULE":3,"GALEANA":2,"GRAN MORELOS":1,"GUACHOCHI":926,"GUADALUPE Y CALVO":928,"GUAZAPARES":95,
+          "GUERRERO":60,"HIDALGO DEL PARRAL":54,"HUEJOTITAN":2,"JANOS":7,"JIMENEZ":18,"JUAREZ":177,"LA CRUZ":2,"LOPEZ":1,"MADERA":20,"MAGUARICHI":18,
+          "MATACHI":2,"MATAMOROS":3,"MORELOS":67,"MORIS":11,"NAMIQUIPA":2,"NONOAVA":21,"NUEVO CASAS GRANDES":14,
+          "OCAMPO":14,"OJINAGA":9,"RIVA PALACIO":1,"ROSALES":1,"ROSARIO":1,"SAN FRANCISCO DE BORJA":6,"SAN FRANCISCO DEL ORO":5,"SANTA BARBARA":6,
+          "SANTA ISABEL":5,"SATEVO":5,"SAUCILLO":4,"TEMOSACHIC":16,"URIQUE":341,"URUACHI":62,"VALLE DE ZARAGOZA":2,
+          
+        }},
+        {codigo:"1S057A1",nombre:"Juntos por nuestra identidad",institucion:"SPCI",total:4799,data:{
+          "CHIHUAHUA":3050,"CUAUHTEMOC":1017,"DELICIAS":135,"HIDALGO DEL PARRAL":436,"JUAREZ":146
+        }},
+        {codigo:"2E218C1",nombre:"Desarrollo económico para la población indígena",institucion:"SPCI",total:268,data:{
+          "BALLEZA":19,"BATOPILAS":3,"BOCOYNA":38,"CARICHI":5,"CHIHUAHUA":19,"CHINIPAS":2,"CUAUHTEMOC":4,"DELICIAS":1,
+          "GUACHOCHI":52,"GUADALUPE Y CALVO":32,"GUERRERO":5,"HIDALGO DEL PARRAL":8,"JUAREZ":21,"MADERA":12,"MORELOS":3,
+          "MORIS":3,"OCAMPO":1,"TEMOSACHIC":2,"URIQUE":35,"URUACHI":3
+        }},
+        {codigo:"1S056A1",nombre:"Incentivos económicos a estudiantes indígenas para su profesionalización",institucion:"SPCI",total:977,data:{
+          "ALLENDE":1,"BALLEZA":32,"BATOPILAS":21,"BOCOYNA":136,"CARICHI":11,"CASAS GRANDES":1,"CHIHUAHUA":29,"CHINIPAS":22,
+          "CUAUHTEMOC":4,"DELICIAS":1,"GOMEZ FARIAS":1,"GUACHOCHI":338,"GUADALUPE Y CALVO":213,"GUAZAPARES":5,"GUERRERO":7,
+          "JIMENEZ":1,"JUAREZ":1,"MADERA":8,"MAGUARICHI":2,"MEOQUI":2,"MORELOS":16,"MORIS":1,"NONOAVA":4,"NUEVO CASAS GRANDES":1,
+          "OCAMPO":9,"ROSARIO":1,"SAN FRANCISCO DE BORJA":2,"SAUCILLO":22,"TEMOSACHIC":1,"URIQUE":71,"URUACHI":9,"LOPEZ":1
+        }},
+        {codigo:"23215C1",nombre:"Fomento por el respeto de los derechos indígenas",institucion:"SPCI",total:5550,data:{
+          "Sin datos":0
+        }},
+
+        // ===== ICHD =====
+        {codigo:"IS031A1",nombre:"Apoyos al deporte",institucion:"ICHD",total:3391,data:{
+          "ALDAMA":2,"AQUILES SERDAN":2,"ASCENSION":4,"BALLEZA":2,"BATOPILAS":1,"BOCOYNA":2,"BUENAVENTURA":9,
+          "CAMARGO":1,"CASAS GRANDES":2,"CHIHUAHUA":3845,"CHINIPAS":1,"CUAUHTEMOC":11,"DELICIAS":4,
+          "DR. BELISARIO DOMINGUEZ":2,"GOMEZ FARIAS":1,"GRAN MORELOS":1,"GUACHOCHI":7,"GUADALUPE Y CALVO":1,
+          "GUAZAPARES":14,"GUERRERO":10,"HIDALGO DEL PARRAL":8,"IGNACIO ZARAGOZA":1,"JANOS":2,"JIMENEZ":1,
+          "JUAREZ":14,"MADERA":12,"MATACHI":1,"MEOQUI":2,"MORIS":1,"NAMIQUIPA":2,"NONOAVA":1,
+          "NUEVO CASAS GRANDES":5,"OCAMPO":10,"OJINAGA":2,"ROSALES":2,"SAN FRANCISCO DE BORJA":1,
+          "SANTA BARBARA":1,"SANTA ISABEL":1,"SAUCILLO":2,"TEMOSACHIC":3,"URIQUE":1,"URUACHI":3
+        }},
+
+        // ===== DIF =====
+        {codigo:"1S005A1",nombre:"Alimentación y desarrollo autosustentable de las familias",institucion:"DIF",total:23620,data:{
+          "AHUMADA":44,"ALDAMA":69,"ALLENDE":39,"AQUILES SERDAN":45,"ASCENSION":60,"BACHINIVA":41,"BALLEZA":757,"BATOPILAS":1135,
+          "BOCOYNA":983,"BUENAVENTURA":537,"CAMARGO":110,"CARICHI":897,"CASAS GRANDES":127,"CHIHUAHUA":99,"CHINIPAS":858,
+          "CORONADO":99,"COYAME DEL SOTOL":34,"CUAUHTEMOC":276,"CUSIHUIRIACHI":34,"DELICIAS":157,"DR. BELISARIO DOMINGUEZ":5,
+          "EL TULE":81,"GALEANA":39,"GOMEZ FARIAS":118,"GRAN MORELOS":37,"GUACHOCHI":2401,"GUADALUPE":34,"GUADALUPE Y CALVO":2353,
+          "GUAZAPARES":481,"GUERRERO":448,"HIDALGO DEL PARRAL":1125,"HUEJOTITAN":45,"IGNACIO ZARAGOZA":46,"JANOS":134,
+          "JIMENEZ":88,"JUAREZ":1628,"JULIMES":73,"LA CRUZ":24,"LOPEZ":15,"MADERA":123,"MAGUARICHI":186,"MANUEL BENAVIDES":2,
+          "MATACHI":68,"MATAMOROS":152,"MEOQUI":25,"MORELOS":609,"MORIS":141,"NAMIQUIPA":22,"NONOAVA":62,"NUEVO CASAS GRANDES":202,
+          "OCAMPO":20,"OJINAGA":43,"PRAXEDIS GUERRERO":26,"RIVA PALACIO":24,"ROSALES":35,"ROSARIO":141,
+          "SAN FRANCISCO DE BORJA":74,"SAN FRANCISCO DE CONCHOS":23,"SAN FRANCISCO DEL ORO":23,"SANTA BARBARA":164,
+          "SANTA ISABEL":166,"SATEVO":75,"SAUCILLO":220,"TEMOSACHIC":118,"URIQUE":670,"URUACHI":448,"VALLE DE ZARAGOZA":34
+        }},
+        {codigo:"1S041A1",nombre:"Fortalecimiento familiar",institucion:"DIF",total:1456,data:{
+          "AHUMADA":1,"ALDAMA":2,"ALLENDE":2,"AQUILES SERDAN":1,"BOCOYNA":3,"CAMARGO":2,"CARICHI":3,"CHIHUAHUA":235,
+          "CUAUHTEMOC":19,"DELICIAS":1,"JIMENEZ":2,"JUAREZ":1186
+        }},
+        {codigo:"1S042A1",nombre:"Rehabilitación integral y apoyos funcionales",institucion:"DIF",total:14643,data:{
+          "AHUMADA":65,"ALDAMA":96,"ALLENDE":20,"AQUILES SERDAN":63,"ASCENSION":33,"BACHINIVA":21,"BALLEZA":113,"BATOPILAS":30,
+          "BOCOYNA":62,"BUENAVENTURA":44,"CAMARGO":55,"CARICHI":88,"CASAS GRANDES":61,"CHIHUAHUA":7302,"CHINIPAS":78,
+          "CORONADO":21,"COYAME DEL SOTOL":10,"CUAUHTEMOC":942,"CUSIHUIRIACHI":143,"DELICIAS":99,"DR. BELISARIO DOMINGUEZ":6,
+          "EL TULE":32,"GALEANA":23,"GOMEZ FARIAS":102,"GRAN MORELOS":13,"GUACHOCHI":259,"GUADALUPE":26,"GUADALUPE Y CALVO":264,
+          "GUAZAPARES":78,"GUERRERO":184,"HIDALGO DEL PARRAL":336,"HUEJOTITAN":10,"IGNACIO ZARAGOZA":65,"JANOS":51,"JIMENEZ":99,
+          "JUAREZ":2412,"JULIMES":30,"LA CRUZ":37,"LOPEZ":12,"MADERA":114,"MAGUARICHI":23,"MATACHI":21,"MATAMOROS":111,
+          "MEOQUI":87,"MORELOS":64,"MORIS":35,"NAMIQUIPA":48,"NONOAVA":20,"NUEVO CASAS GRANDES":100,"OCAMPO":109,"OJINAGA":37,
+          "PRAXEDIS GUERRERO":56,"RIVA PALACIO":17,"ROSALES":13,"ROSARIO":33,"SAN FRANCISCO DE BORJA":92,"SAN FRANCISCO DE CONCHOS":7,
+          "SAN FRANCISCO DEL ORO":20,"SANTA BARBARA":49,"SANTA ISABEL":55,"SATEVO":28,"SAUCILLO":93,"TEMOSACHIC":57,"URIQUE":105,
+          "URUACHI":56,"VALLE DE ZARAGOZA":37
+        }},
+        {codigo:"1S045A1",nombre:"Gestión social y apoyo a la ciudadanía",institucion:"DIF",total:1823,data:{
+          "ALDAMA":12,"ALLENDE":2,"AQUILES SERDAN":7,"BALLEZA":1,"BATOPILAS":9,"BOCOYNA":21,"BUENAVENTURA":6,"CAMARGO":6,
+          "CARICHI":4,"CHIHUAHUA":1570,"CHINIPAS":9,"COYAME DEL SOTOL":1,"CUAUHTEMOC":12,"CUSIHUIRIACHI":1,"DELICIAS":42,
+          "DR. BELISARIO DOMINGUEZ":5,"GOMEZ FARIAS":1,"GRAN MORELOS":1,"GUACHOCHI":19,"GUADALUPE":2,"GUADALUPE Y CALVO":16,
+          "GUAZAPARES":6,"GUERRERO":16,"HIDALGO DEL PARRAL":6,"JIMENEZ":6,"JUAREZ":5,"JULIMES":3,"LA CRUZ":1,"LOPEZ":1,
+          "MADERA":2,"MEOQUI":4,"MORIS":1,"NAMIQUIPA":1,"NONOAVA":2,"NUEVO CASAS GRANDES":2,"OCAMPO":2,"OJINAGA":6,
+          "ROSALES":14,"SAN FRANCISCO DEL ORO":35,"SANTA BARBARA":2,"SANTA ISABEL":2,"SATEVO":10,"SAUCILLO":4,"TEMOSACHIC":1,
+          "URIQUE":15,"URUACHI":1,"VALLE DE ZARAGOZA":1
+        }},
+        {codigo:"2E093C1",nombre:"Esparcimiento para el desarrollo familiar",institucion:"DIF",total:514,data:{
+          "ALDAMA":1,"BACHINIVA":2,"BOCOYNA":1,"BUENAVENTURA":1,"CARICHI":1,"CHIHUAHUA":495,"CUAUHTEMOC":2,"DELICIAS":2,
+          "GUACHOCHI":1,"GUERRERO":3,"HIDALGO DEL PARRAL":2,"MEOQUI":1,"NONOAVA":1,"SATEVO":1,"SAUCILLO":4
+        }},
+        {codigo:"1S059A1",nombre:"Juntos por la sierra",institucion:"DIF",total:81632,data:{
+          "ALLENDE":1,"BALLEZA":9267,"BATOPILAS":9021,"BOCOYNA":9168,"CAMARGO":1,"CARICHI":3731,"CHIHUAHUA":2,"CHINIPAS":1862,
+          "GUACHOCHI":17029,"GUADALUPE Y CALVO":10941,"GUAZAPARES":1788,"GUERRERO":1627,"MADERA":1583,"MAGUARICHI":1142,
+          "MATACHI":994,"MORELOS":3845,"MORIS":2222,"NONOAVA":1273,"OCAMPO":1083,"TEMOSACHIC":1964,"URIQUE":1938,"URUACHI":1734
+        }},
+        {codigo:"1S005A1",nombre:"Desayunamos juntos, come, crece y aprende",institucion:"DIF",total:2068,data:{
+          "AHUMADA":17,"ALDAMA":27,"ALLENDE":22,"AQUILES SERDAN":4,"ASCENSION":23,"BACHINIVA":13,"BALLEZA":40,"BATOPILAS":25,"BOCOYNA":44,
+          "BUENAVENTURA":36,"CAMARGO":49,"CARICHI":26,"CASAS GRANDES":22,"CHIHUAHUA":72,"CHINIPAS":16,"CORONADO":8,"COYAME DEL SOTOL":4,
+          "CUAUHTEMOC":66,"CUSIHUIRIACHI":17,"DELICIAS":42,"DR. BELISARIO DOMINGUEZ":8,"EL TULE":8,"GALEANA":10,"GOMEZ FARIAS":15,"GRAN MORELOS":7,
+          "GUACHOCHI":115,"GUADALUPE":9,"GUADALUPE Y CALVO":225,"GUAZAPARES":30,"GUERRERO":85,"HIDALGO DEL PARRAL":32,"HUEJOTITAN":4,
+          "IGNACIO ZARAGOZA":12,"JANOS":24,"JIMENEZ":30,"JUAREZ":281,"JULIMES":17,"LA CRUZ":8,"LOPEZ":10,"MADERA":65,"MAGUARICHI":2,
+          "MANUEL BENAVIDES":2,"MATACHI":8,"MATAMOROS":11,"MEOQUI":26,"MORELOS":36,"MORIS":25,"NAMIQUIPA":44,"NONOAVA":12,
+          "NUEVO CASAS GRANDES":24,"OCAMPO":31,"OJINAGA":10,"PRAXEDIS GUERRERO":12,"RIVA PALACIO":8,"ROSALES":21,"ROSARIO":6,
+          "SAN FRANCISCO DE BORJA":7,"SAN FRANCISCO DE CONCHOS":12,"SAN FRANCISCO DEL ORO":9,"SANTA BARBARA":19,"SANTA ISABEL":8,
+          "SATEVO":7,"SAUCILLO":26,"TEMOSACHIC":18,"URIQUE":60,"URUACHI":44,"VALLE DE ZARAGOZA":12
+        }},
+        {codigo:"1S041A1",nombre: "Acciones que mejoran las habilidades de crianza para un desarrollo armónico",institucion:"DIF",total:982,data:{
+          "CHIHUAHUA": 982
+        }},
+
+        // ===== ICHDII =====
+        {codigo: "1S052A1",nombre: "Estancias infantiles para el desarrollo integral de la niñez",institucion: "ICHDII",total: 11180,data: {
+          "ALDAMA":38,"AQUILES SERDAN": 31, "ASCENSION": 14,"BOCOYNA": 49, "BUENAVENTURA": 21, "CAMARGO": 116,"LA CRUZ": 22, "CUAUHTEMOC": 608,
+          "CHIHUAHUA": 2478,"DELICIAS": 1031,"GALEANA": 90,"GOMEZ FARIAS": 42,"GUACHOCHI": 272, "GUADALUPE": 29, "GUADALUPE Y CALVO": 42,
+          "GUAZAPARES": 150,"HIDALGO DEL PARRAL": 296,"JIMENEZ": 118, "JUAREZ": 4104, "JULIMES": 17, "LOPEZ": 22, "MADERA": 76,"MEOQUI": 74,"NONOAVA": 30,
+          "NUEVO CASAS GRANDES": 20,"OJINAGA": 37,"ROSALES": 29,"SANTA BARBARA": 28, "SATEVO": 29, "SAUCILLO": 81,"URIQUE": 130
+        }},
+
+        // ===== SDHyBC =====
+        {codigo: "1S047A1",nombre: "Apoyo a personas con discapacidad",institucion: "SDHyBC",total: 8042,data: {
+          "AHUMADA": 39, "ALDAMA": 100, "ALLENDE": 52, "AQUILES SERDAN": 112, "ASCENSION": 70, "BACHINIVA": 40, "BALLEZA": 106,
+          "BATOPILAS": 36, "BOCOYNA": 251, "BUENAVENTURA": 67, "CAMARGO": 200, "CARICHI": 60,
+          "CASAS GRANDES": 69, "CORONADO": 66, "COYAME DEL SOTOL": 25, "LA CRUZ": 55, "CUAUHTEMOC": 382, "CUSIHUIRIACHI": 26,
+          "CHIHUAHUA": 1344, "CHINIPAS": 54, "DELICIAS": 510, "DR. BELISARIO DOMINGUEZ": 36, "GALEANA": 30, "SANTA ISABEL": 60,
+          "GOMEZ FARIAS": 40, "GRAN MORELOS": 20, "GUACHOCHI": 211, "GUADALUPE": 30, "GUADALUPE Y CALVO": 152,
+          "GUAZAPARES": 82, "GUERRERO": 107, "HIDALGO DEL PARRAL": 437, "HUEJOTITAN": 8, "IGNACIO ZARAGOZA": 20, "JANOS": 30,
+          "JIMENEZ": 85, "JUAREZ": 681, "JULIMES": 55, "LOPEZ": 49, "MADERA": 137, "MAGUARICHI": 30, "MANUEL BENAVIDES": 36,
+          "MATACHI": 40, "MATAMOROS": 81, "MEOQUI": 131, "MORELOS": 64, "MORIS": 49, "NAMIQUIPA": 116, "NONOAVA": 75,
+          "NUEVO CASAS GRANDES": 40, "OCAMPO": 56, "OJINAGA": 74, "PRAXEDIS GUERRERO": 25, "RIVA PALACIO": 76,
+          "ROSALES": 82, "ROSARIO": 19, "SAN FRANCISCO DE BORJA": 51, "SAN FRANCISCO DE CONCHOS": 25,
+          "SAN FRANCISCO DEL ORO": 25, "SANTA BARBARA": 102, "SATEVO": 76, "SAUCILLO": 109, "TEMOSACHIC": 31, "EL TULE": 30,
+          "URIQUE": 91, "URUACHI": 69, "VALLE DE ZARAGOZA": 53
+       }},
+        {codigo: "1S027A1", nombre: "Apoyo a personas mayores", institucion: "SDHyBC", total: 10711, data: {
+  "AHUMADA": 54, "ALDAMA": 66, "ALLENDE": 83, "AQUILES SERDAN": 76, "ASCENSION": 99, "BACHINIVA": 64, "BALLEZA": 153, "BATOPILAS": 240, "BOCOYNA": 391,
+  "BUENAVENTURA": 44, "CAMARGO": 172, "CARICHI": 106, "CASAS GRANDES": 61, "CORONADO": 90, "COYAME DEL SOTOL": 37, "LA CRUZ": 45, "CUAUHTEMOC": 260, "CUSIHUIRIACHI": 52,
+  "CHIHUAHUA": 2688, "CHINIPAS": 253, "DELICIAS": 427, "DR. BELISARIO DOMINGUEZ": 61, "GALEANA": 41, "SANTA ISABEL": 29, "GOMEZ FARIAS": 43, "GRAN MORELOS": 30,
+  "GUACHOCHI": 240, "GUADALUPE": 50, "GUADALUPE Y CALVO": 550, "GUAZAPARES": 141, "GUERRERO": 34, "HIDALGO DEL PARRAL": 598, "HUEJOTITAN": 42, "IGNACIO ZARAGOZA": 36,
+  "JANOS": 92, "JIMENEZ": 58, "JUAREZ": 576, "JULIMES": 51, "LOPEZ": 24, "MADERA": 334, "MAGUARICHI": 45, "MANUEL BENAVIDES": 27, "MATACHI": 44, "MATAMOROS": 110,
+  "MEOQUI": 155, "MORELOS": 54, "MORIS": 111, "NAMIQUIPA": 55, "NONOAVA": 116, "NUEVO CASAS GRANDES": 58, "OCAMPO": 54, "OJINAGA": 76, "PRAXEDIS GUERRERO": 45,
+  "RIVA PALACIO": 52, "ROSALES": 137, "ROSARIO": 45, "SAN FRANCISCO DE BORJA": 59, "SAN FRANCISCO DE CONCHOS": 33, "SAN FRANCISCO DEL ORO": 22, "SANTA BARBARA": 67,
+  "SATEVO": 71, "SAUCILLO": 140, "TEMOSACHIC": 52, "EL TULE": 78, "URIQUE": 208, "URUACHI": 77, "VALLE DE ZARAGOZA": 61
+        }},
+        {codigo: "2E027C1", nombre: "Fortalecimiento comunitario y participación ciudadana", institucion: "SDHyBC", total:25485, data: {
+  "AHUMADA": 133, "ALDAMA": 408, "ALLENDE": 302, "AQUILES SERDAN": 308, "ASCENSION": 251, "BALLEZA": 41, "BATOPILAS": 173, "BOCOYNA": 627, 
+  "CAMARGO": 1166, "CARICHI": 291, "CASAS GRANDES": 126, "CUAUHTEMOC": 565, "CHIHUAHUA": 13478, "DELICIAS": 743, "SANTA ISABEL": 280, "GUACHOCHI": 118, 
+  "GUADALUPE": 19, "GUADALUPE Y CALVO": 1582, "GUERRERO": 809, "HIDALGO DEL PARRAL": 1696, "JANOS": 404, "JIMENEZ": 133, "JUAREZ": 100, "MADERA": 221, 
+  "MAGUARICHI": 60, "MATACHI": 119, "MATAMOROS": 117, "MORIS": 139, "NONOAVA": 156, "NUEVO CASAS GRANDES": 126, "OJINAGA": 395, "ROSALES": 222, 
+  "SANTA BARBARA": 13, "SAUCILLO": 233, "EL TULE": 110, "URIQUE": 200
+        }},
+        {codigo: "1S054A1", nombre: "Atención a niños, niñas, adolescentes y juventudes", institucion: "SDHyBC", total:2075, data: {
+  "AQUILES SERDAN": 26, "ASCENSION": 46, "CASAS GRANDES": 18, "CUAUHTEMOC": 24, "CHIHUAHUA": 1754, "JIMENEZ": 31, "JUAREZ": 65, "MATAMOROS": 41, "MORIS": 36, "URUACHI": 37
+        }},
+        {codigo: "2F054C1", nombre: "Proyectos productivos y economía solidaria", institucion: "SDHyBC", total:964, data: {
+  "ALDAMA": 23, "ALLENDE": 58, "ASCENSION": 10, "BOCOYNA": 112, "CAMARGO": 108, "CARICHI": 26, "CASAS GRANDES": 5, "LA CRUZ": 10, "CUAUHTEMOC": 100, "CUSIHUIRIACHI": 5, 
+  "CHIHUAHUA": 175, "DELICIAS": 3, "GOMEZ FARIAS": 10, "GUADALUPE Y CALVO": 7, "HIDALGO DEL PARRAL": 110, "JIMENEZ": 15, "JUAREZ": 55, "MEOQUI": 17, "NUEVO CASAS GRANDES": 120,
+ "SAN FRANCISCO DE CONCHOS": 4, "SAUCILLO": 87, "URIQUE": 7
+        }},
+        {codigo: "1S028A1", nombre: "Juntos sí podemos", institucion: "SDHyBC", total: 23577, data: {
+  "JUAREZ":23577
+        }},
+        {codigo: "1S025A1", nombre: "Desarrollo humano", institucion: "SDHyBC", total: 3175, data: {
+  "ALDAMA": 10, "ALLENDE": 12, "AQUILES SERDAN": 13, "ASCENSION": 12, "BALLEZA": 237, "BATOPILAS": 356, "BOCOYNA": 264, "BUENAVENTURA": 19,
+   "CAMARGO": 33, "CASAS GRANDES": 13, "CUAUHTEMOC": 68, "CHIHUAHUA": 573, "DELICIAS": 36, "SANTA ISABEL": 12, "GUACHOCHI": 77, "GUADALUPE Y CALVO": 94,
+    "GUERRERO": 109, "HIDALGO DEL PARRAL": 443, "HUEJOTITAN": 1, "JIMENEZ": 17, "JUAREZ": 141, "MADERA": 4, "MATAMOROS": 2, "MEOQUI": 25, "MORELOS": 1, "MORIS": 99, 
+    "NAMIQUIPA": 14, "NONOAVA": 182, "NUEVO CASAS GRANDES": 23, "RIVA PALACIO": 12, "ROSALES": 13, "ROSARIO": 1, "SANTA BARBARA": 15, "SAUCILLO": 13, "TEMOSACHIC": 11, 
+    "URIQUE": 22, "URUACHI": 252
+        }},
+
+    // ===== SDR =====
+        {codigo: "2F004C1", nombre: "Fomento agrícola", institucion: "SDR", total: 3530, data: {
+  "ALDAMA": 1,"ASCENSION": 454,"BOCOYNA": 199,"CAMARGO": 247,"CASAS GRANDES": 48,"CHIHUAHUA": 1488,
+  "COYAME DEL SOTOL": 85,"CUAUHTEMOC": 1,"DELICIAS": 211,"GUERRERO": 241,"JANOS": 192,"JIMENEZ": 3,"LA CRUZ": 1,"MAGUARICHI": 2,
+  "MEOQUI": 3,"NAMIQUIPA": 10,"NUEVO CASAS GRANDES": 1,"ROSALES": 2,"SATEVO": 329,"SAUCILLO": 23
+        }},
+        {codigo: "1S053B1", nombre: "Atención a la sequía", institucion: "SDR", total: 919, data: {
+  "AHUMADA": 48,"ASCENSION": 52,"BACHINIVA": 74,"CAMARGO": 55,"CASAS GRANDES": 103,"CORONADO": 39,"DR. BELISARIO DOMINGUEZ": 69,
+  "GOMEZ FARIAS": 60,"JANOS": 89,"MANUEL BENAVIDES": 61,"NUEVO CASAS GRANDES": 39,"ROSALES": 78,"SAN FRANCISCO DE BORJA": 59,"TEMOSACHIC": 93
+        }},
+        {codigo: "1S019B1", nombre: "Desarrollo forestal sustentable", institucion: "SDR", total: 1, data: {
+  "CHIHUAHUA": 1
+        }},
+        {codigo: "1S017B1", nombre: "Desarrollo rural sustentable", institucion: "SDR", total: 1811, data: {
+  "ALLENDE": 1,"BALLEZA": 1,"BATOPILAS": 7,"BOCOYNA": 3,"BUENAVENTURA": 1,"CAMARGO": 3,"CASAS GRANDES": 1,"CHIHUAHUA": 16,
+  "CORONADO": 1,"CUAUHTEMOC": 7,"CUSIHUIRIACHI": 12,"GUAZAPARES": 1,"GUERRERO": 33,"HIDALGO DEL PARRAL": 2,"JIMENEZ": 1,"MEOQUI": 3,
+  "NAMIQUIPA": 94,"OCAMPO": 1,"RIVA PALACIO": 89,"SAN FRANCISCO DE BORJA": 1,"SAN FRANCISCO DE CONCHOS": 2,"SANTA ISABEL": 2,"VALLE DE ZARAGOZA": 1
+        }},
+        {codigo: "2F052C1", nombre: "Desarrollo de productores agropecuarios, agroindustriales, agrícolas y forestales", institucion: "SDR", total: 233, data: {
+  "AHUMADA": 1, "ALDAMA": 2, "ALLENDE": 1, "ASCENSION": 1, "BACHINIVA": 14, "BUENAVENTURA": 9, "CAMARGO": 9, "CASAS GRANDES": 2, 
+  "CHIHUAHUA": 98, "CUAUHTEMOC": 14, "CUSIHUIRIACHI": 18, "DELICIAS": 2, "GALEANA": 2, "GOMEZ FARIAS": 2, "GUERRERO": 14, 
+  "HIDALGO DEL PARRAL": 4, "IGNACIO ZARAGOZA": 2, "JANOS": 2, "JIMENEZ": 1, "JULIMES": 2, "LA CRUZ": 1, "LOPEZ": 3, 
+  "MADERA": 19, "MATACHI": 3, "MATAMOROS": 1, "MEOQUI": 1, "NAMIQUIPA": 54, "NUEVO CASAS GRANDES": 11, "RIVA PALACIO": 1, 
+  "SANTA ISABEL": 2, "SATEVO": 2, "VALLE DE ZARAGOZA": 1
+        }},
+        {codigo: "2E084C1", nombre: "Mecanización del campo", institucion: "SDR", total: 111, data: {
+  "ALDAMA": 11,"ALLENDE": 3,"AQUILES SERDAN": 1,"BACHINIVA": 2,"BALLEZA": 1,"BOCOYNA": 2,"BUENAVENTURA": 1,"CAMARGO": 4,
+  "CARICHI": 1,"CASAS GRANDES": 4,"CHIHUAHUA": 3,"CHINIPAS": 1,"CORONADO": 2,"CUAUHTEMOC": 1,"DELICIAS": 2,"DR. BELISARIO DOMINGUEZ": 1,
+  "EL TULE": 1,"GALEANA": 1,"GOMEZ FARIAS": 1,"GUACHOCHI": 2,"GUERRERO": 7,"HIDALGO DEL PARRAL": 2,"IGNACIO ZARAGOZA": 1,"JANOS": 1,
+  "JIMENEZ": 3,"JUAREZ": 1,"JULIMES": 6,"LOPEZ": 1,"MADERA": 6,"MANUEL BENAVIDES": 2,"MATACHI": 2,"MEOQUI": 3,"NAMIQUIPA": 2,
+  "NONOAVA": 1,"NUEVO CASAS GRANDES": 2,"OJINAGA": 3,"PRAXEDIS GUERRERO": 1,"ROSARIO": 7,"SAN FRANCISCO DE CONCHOS": 2,
+  "SANTA BARBARA": 3,"SANTA ISABEL": 1,"SATEVO": 2,"SAUCILLO": 2,"TEMOSACHIC": 2,"URIQUE": 1,"VALLE DE ZARAGOZA": 1
+        }},
+        {codigo: "1S020B1", nombre: "Uso sustentable del agua", institucion: "SDR", total: 74, data: {
+  "ALDAMA": 3, "ALLENDE": 1, "BOCOYNA": 1, "CAMARGO": 1, "CHIHUAHUA": 3, "DELICIAS": 1, "GUACHOCHI": 12, 
+  "GUADALUPE Y CALVO": 15, "GUERRERO": 1, "HIDALGO DEL PARRAL": 6, "JUAREZ": 1, "MADERA": 4, "MEOQUI": 2, 
+  "OCAMPO": 2, "OJINAGA": 1, "ROSALES": 1, "SAN FRANCISCO DE CONCHOS": 4, "SAUCILLO": 1, "VALLE DE ZARAGOZA": 14
+        }},
+        {codigo: "2F012B1", nombre: "Fomento de los agronegocios y valor agregado", institucion: "SDR", total: 511, data: {
+  "ALLENDE": 29, "BACHINIVA": 1, "BATOPILAS": 4, "BOCOYNA": 31, "CAMARGO": 7, "CASAS GRANDES": 7, "CHIHUAHUA": 140, "CORONADO": 11, "COYAME DEL SOTOL": 2, "CUAUHTEMOC": 25, "CUSIHUIRIACHI": 3,
+  "DELICIAS": 20, "GOMEZ FARIAS": 4, "GUACHOCHI": 29, "GUADALUPE Y CALVO": 1, "GUERRERO": 19, "HIDALGO DEL PARRAL": 16, "JIMENEZ": 20, "JUAREZ": 24, "JULIMES": 2, "LA CRUZ": 15, "LOPEZ": 13, "MADERA": 11, "MAGUARICHI": 8,
+  "MATACHI": 1, "MEOQUI": 25, "MORELOS": 7, "MORIS": 1, "NAMIQUIPA": 9, "NONOAVA": 5, "NUEVO CASAS GRANDES": 3, "OJINAGA": 3, "ROSALES": 9, "SANTA ISABEL": 1, "SATEVO": 2, "SAUCILLO": 25, "TEMOSACHIC": 3, "URUACHI": 4
+        }},
+        {codigo: "1S014B2", nombre: "Subsidios a la producción, equipamiento e infraestructura", institucion: "SDR", total: 18961, data: {
+  "AHUMADA": 78, "ALDAMA": 479, "ALLENDE": 405, "AQUILES SERDAN": 9, "ASCENSION": 127, "BACHINIVA": 513, "BALLEZA": 238, "BATOPILAS": 74, "BOCOYNA": 327, "BUENAVENTURA": 376,
+  "CAMARGO": 330, "CARICHI": 312, "CASAS GRANDES": 62, "CHIHUAHUA": 689, "CHINIPAS": 93, "CORONADO": 238, "COYAME DEL SOTOL": 68, "CUAUHTEMOC": 848,
+  "CUSIHUIRIACHI": 760, "DELICIAS": 139, "DR. BELISARIO DOMINGUEZ": 486, "EL TULE": 143, "GALEANA": 104, "GOMEZ FARIAS": 420, "GRAN MORELOS": 285, "GUACHOCHI": 156, "GUADALUPE": 33,
+  "GUADALUPE Y CALVO": 261, "GUAZAPARES": 57, "GUERRERO": 1491, "HIDALGO DEL PARRAL": 427, "HUEJOTITAN": 155, "IGNACIO ZARAGOZA": 444, "JANOS": 147, "JIMENEZ": 254, "JUAREZ": 68, "JULIMES": 165, "LA CRUZ": 96, "LOPEZ": 46,
+  "MADERA": 834, "MAGUARICHI": 21, "MANUEL BENAVIDES": 198, "MATACHI": 156, "MATAMOROS": 374, "MEOQUI": 247, "MORELOS": 1, "MORIS": 87, "NAMIQUIPA": 1110, "NONOAVA": 264, "NUEVO CASAS GRANDES": 68, "OCAMPO": 131, "OJINAGA": 191, "PRAXEDIS GUERRERO": 45,
+  "RIVA PALACIO": 507, "ROSALES": 200, "ROSARIO": 370, "SAN FRANCISCO DE BORJA": 264, "SAN FRANCISCO DE CONCHOS": 74, "SAN FRANCISCO DEL ORO": 92, "SANTA BARBARA": 222, "SANTA ISABEL": 419, "SATEVO": 579, "SAUCILLO": 242, "TEMOSACHIC": 412, "URIQUE": 98, "URUACHI": 270, "VALLE DE ZARAGOZA": 223
+        }},
+
+        // ===== TRABAJO =====
+        {codigo: "1S037A1", nombre: "Apoyos para el empleo", institucion: "TRABAJO", total: 4177, data: {
+  "ALDAMA": 46, "ALLENDE": 41, "BALLEZA": 65, "BOCOYNA": 42, "CARICHI": 49, "CHIHUAHUA": 95, "CHINIPAS": 50, "CORONADO": 47, "CUAUHTEMOC": 46,
+  "GRAN MORELOS": 40, "GUACHOCHI": 81, "GUADALUPE Y CALVO": 63, "GUAZAPARES": 50, "GUERRERO": 97, "HIDALGO DEL PARRAL": 103, "JIMENEZ": 25, "JUAREZ": 1237,
+  "LOPEZ": 41, "MADERA": 50, "MAGUARICHI": 25, "MATACHI": 25, "MATAMOROS": 45, "MORELOS": 37, "MORIS": 49, "NONOAVA": 97, "OCAMPO": 42, "RIVA PALACIO": 63,
+  "SAN FRANCISCO DE BORJA": 40, "SANTA ISABEL": 61, "TEMOSACHIC": 99, "URIQUE": 40, "URUACHI": 50, "BACHINIVA": 1236
+        }},
+
+        // ===== CULTURA =====
+        {codigo: "1S012A1",nombre: "Apoyos a la cultura",institucion: "CULTURA",total: 137,data: {"CAMARGO": 2,"CHIHUAHUA": 125,"DELICIAS": 3,
+    "GUACHOCHI": 2,"HIDALGO DEL PARRAL": 5,"JUAREZ": 1,"MADERA": 1,"NUEVO CASAS GRANDES": 1,"OJINAGA": 3,"SAN FRANCISCO DEL ORO": 1,"SANTA BARBARA": 1
+        }},
+        // ===== COESVI =====
+        {codigo: "1S015A1",nombre: "Apoyos sociales en vivienda",institucion: "COESVI",total: 3546,data: {
+    "ALDAMA": 25,"AQUILES SERDAN": 3,"BACHINIVA": 175,"CHIHUAHUA": 340,"CUAUHTEMOC": 174,"CUSIHUIRIACHI": 193,
+    "DR. BELISARIO DOMINGUEZ": 50,"GOMEZ FARIAS": 60,"GRAN MORELOS": 55,"GUERRERO": 439,"HIDALGO DEL PARRAL": 1,
+    "IGNACIO ZARAGOZA": 140,"JIMENEZ": 39,"MADERA": 95,"MORIS": 87,"NAMIQUIPA": 139,"NONOAVA": 124,"OCAMPO": 196,
+    "RIVA PALACIO": 189,"ROSALES": 128,"SAN FRANCISCO DE BORJA": 55,"SANTA ISABEL": 301,"SAUCILLO": 1,"TEMOSACHIC": 144,"URUACHI": 293
+        }},
+        {codigo: "2E086C1",nombre: "Vivienda digna",institucion: "COESVI",total: 1369,data: {
+    "ALDAMA": 15,"AQUILES SERDAN": 19,"ASCENSION": 27,"BALLEZA": 12,"CAMARGO": 92,"CHIHUAHUA": 241,"COYAME DEL SOTOL": 61,
+    "CUSIHUIRIACHI": 24,"DELICIAS": 19,"GUACHOCHI": 22,"GUADALUPE Y CALVO": 30,"HIDALGO DEL PARRAL": 36,
+    "JIMENEZ": 33,"JUAREZ": 299,"JULIMES": 30,"LA CRUZ": 57,"MEOQUI": 2,"NONOAVA": 15,"NUEVO CASAS GRANDES": 7,"RIVA PALACIO": 95,
+    "SAN FRANCISCO DE BORJA": 59,"SANTA ISABEL": 82,"SATEVO": 36,"URIQUE": 152,"URUACHI": 21
+        }},
+        // ===== COESPO =====
+        {codigo:"1S046A1",nombre: "Apoyo integral a migrantes",institucion:"COESPO",total:9711,data: {
+    "JUAREZ": 9384,"CHIHUAHUA": 327
+        }},
+        // ===== SALUD =====
+        {codigo: "2E166C1",nombre: "Atención médica",institucion: "MEDICHIHUAHUA",total: 450734,data: {
+    "AHUMADA": 3389,"ALDAMA": 6478,"AQUILES SERDAN": 1815,"ASCENSION": 5752,"BACHINIVA": 1840,"BALLEZA": 3466,"BATOPILAS": 2207,
+    "BOCOYNA": 7107,"BUENAVENTURA": 5301,"CAMARGO": 9623,"CARICHI": 2673,"CASAS GRANDES": 2435,"CORONADO":878,"COYAME DEL SOTOL":778,
+    "LA CRUZ":1618,"CUAUHTEMOC":30362,"CUSIHUIRIACHI":253,"CHIHUAHUA": 104987,"CHINIPAS": 1526,
+    "DELICIAS": 15002,"DR. BELISARIO DOMINGUEZ": 521,"EL TULE": 1744,"GALEANA": 2382,"GOMEZ FARIAS": 3644,"GRAN MORELOS": 756,"GUACHOCHI": 9056,
+    "GUADALUPE":1157,"GUADALUPE Y CALVO": 7027,"GUAZAPARES": 2654,
+    "GUERRERO": 9384,"HIDALGO DEL PARRAL": 18956,"HUEJOTITAN": 430,"IGNACIO ZARAGOZA": 1795,"JANOS": 1932,"JIMENEZ": 12440,"JUAREZ": 96588,"JULIMES": 1477,
+    "LOPEZ": 1889,"MADERA": 4645,"MAGUARICHI": 490,"MANUEL BENAVIDES": 787,"MATACHI": 688,"MATAMOROS": 2373,"MEOQUI": 6139,"MORELOS": 417,
+    "MORIS": 1578,"NAMIQUIPA": 5308,"NONOAVA": 895,"NUEVO CASAS GRANDES": 9379,"OCAMPO": 2384,
+    "OJINAGA": 8253,"PRAXEDIS GUERRERO": 1764,"RIVA PALACIO": 407,"ROSALES": 2256,"SAN FRANCISCO DE BORJA": 1062,
+    "SAN FRANCISCO DE CONCHOS": 1593,"SAN FRANCISCO DEL ORO": 1440,"SANTA BARBARA": 2039,"SANTA ISABEL": 1661,"SATEVO": 5127,
+    "SAUCILLO": 1127,"TEMOSACHIC": 931,"URIQUE": 3812,"URUACHI": 1179,"VALLE DE ZARAGOZA": 3174
+        }}
+
+
+        //2025=========================================================================================================================
+
+      ],
+      "2025": [
+        // ===== ICHIJUV =====
+        {codigo:"1S022A1",nombre:"Impulsando juventudes",institucion:"ICHIJUV",total:409,data:{
+         "AHUMADA": 1,"ALDAMA": 2,"BOCOYNA": 5,"BUENAVENTURA": 1,"CAMARGO": 1,"CHIHUAHUA": 100,"CUAUHTEMOC": 8,
+         "DELICIAS": 1,"GUACHOCHI": 11,"GUERRERO": 2,"HIDALGO DEL PARRAL": 2,"JUAREZ": 7,"MATACHI": 1,"NAMIQUIPA": 3,"NUEVO CASAS GRANDES": 2,
+         "ROSARIO": 1,"URIQUE": 10,"URUACHI": 1
+        }},
+        {codigo:"2P026L2",nombre:"Institucionalización de la perspectiva de las juventudes",institucion:"ICHIJUV",total:1680,data:{
+         "ALDAMA": 1,"BALLEZA":3,"CAMARGO": 1,"CHIHUAHUA": 283,"CUAUHTEMOC": 16,"DELICIAS": 1,"HIDALGO DEL PARRAL": 5,"LOPEZ": 1,
+    "JUAREZ": 4,"MEOQUI": 2,"NUEVO CASAS GRANDES": 1
+        }},
+        {codigo:"2E029C1",nombre:"Atención a la juventud",institucion:"ICHIJUV",total:56082,data:{
+           "AHUMADA": 3,"ALDAMA": 79,"AQUILES SERDAN": 23,"ASCENSION": 1,"BALLEZA": 4,"BOCOYNA": 72,
+           "CAMARGO": 555,"CHIHUAHUA": 3958,"CUAUHTEMOC": 120,"DELICIAS": 35,"EL TULE": 2,
+           "GUACHOCHI": 145,"GUADALUPE Y CALVO": 28,"GUAZAPARES": 13,"GUERRERO": 3,"HIDALGO DEL PARRAL": 1571,
+           "JIMENEZ": 10,"JUAREZ": 2462,"LA CRUZ": 1,"MADERA": 1,"MATAMOROS": 1,
+           "MEOQUI": 34,"NAMIQUIPA": 3,"NONOAVA": 3,"NUEVO CASAS GRANDES": 20,"ROSALES": 6,"ROSARIO": 13,"SAN FRANCISCO DE CONCHOS": 1,
+           "SAN FRANCISCO DEL ORO": 5,"SANTA BARBARA": 190,"SANTA ISABEL": 2,"SAUCILLO": 15,"URIQUE": 1,"VALLE DE ZARAGOZA": 1
+        }},
+
+        // ===== SPCI =====
+        {codigo:"1S035A1",nombre:"Asistencia social para la población indígena",institucion:"SPCI",total:7594,data:{
+          "AHUMADA":2,"ALDAMA":13,"ALLENDE":4,"AQUILES SERDAN":5,"ASCENSION":16,"BACHINIVA":3,"BALLEZA":200,
+          "BATOPILAS":186,"BOCOYNA":506,"BUENAVENTURA":15,"CAMARGO":20,"CARICHI":128,"CASAS GRANDES":14,"CHIHUAHUA":1195,"CHINIPAS":18,
+          "CUAUHTEMOC":1266,"CUSIHUIRIACHI":9,"DELICIAS":13,"DR. BELISARIO DOMINGUEZ":3,
+          "GALEANA":2,"GOMEZ FARIAS":1,"GRAN MORELOS":2,"GUACHOCHI":914,"GUADALUPE Y CALVO":964,"GUAZAPARES":68,
+          "GUERRERO":56,"HIDALGO DEL PARRAL":264,"JANOS":8,"JIMENEZ":18,"JUAREZ":212,"LA CRUZ":2,"LOPEZ":1,"MADERA":9 ,"MAGUARICHI":11, "MANUEL BENAVIDES":1,"MATAMOROS":1,
+          "MATACHI":1,"MEOQUI":3,"MORELOS":41,"MORIS":23,"NAMIQUIPA":4,"NONOAVA":9,"NUEVO CASAS GRANDES":15,
+          "OCAMPO":10,"OJINAGA":5,"PRAXEDIS GUERRERO":1,"ROSALES":1,"SAN FRANCISCO DE BORJA":5,"SAN FRANCISCO DE CONCHOS":2,"SANTA BARBARA":5,"SANTA ISABEL":1,
+          "SATEVO":1,"SAUCILLO":5,"TEMOSACHIC":25,"URIQUE":305,"URUACHI":57,"VALLE DE ZARAGOZA":1
+        }},
+        {codigo:"1S057A1",nombre:"Juntos por nuestra identidad",institucion:"SPCI",total:4831,data:{
+           "Sin datos":0
+        }},
+        {codigo:"2E218C1",nombre:"Desarrollo económico para la población indígena",institucion:"SPCI",total:319,data:{
+           "HIDALGO DEL PARRAL":28,"GUERRERO":9,"ASCENSION":1,"GUADALUPE Y CALVO":17,"BOCOYNA":53,"OCAMPO":1,"CAMARGO":15,"CARICHI":5,"CHIHUAHUA":57,"URUACHI":2,
+          "URIQUE":8,"GUACHOCHI":18,"LA CRUZ":4,"BOCOYNA":27,"CUAUHTEMOC":30,"DELICIAS":6,"BUENAVENTURA":1,"BALLEZA":6,"GUAZAPARES":14,"JUAREZ":21,"MADERA":18,
+          "MEOQUI":14,"MORIS":12
+        }},
+        {codigo:"1S056A1",nombre:"Incentivos económicos a estudiantes indígenas para su profesionalización",institucion:"SPCI",total:965,data:{
+          "BATOPILAS":2,"BOCOYNA":115,"CARICHI":2,"CHIHUAHUA":112,"CHINIPAS":4,
+          "CUAUHTEMOC":247,"GUACHOCHI":237,"GUADALUPE Y CALVO":117,"GUAZAPARES":2,"GUERRERO":5,"HIDALGO DEL PARRAL": 13,
+          "JIMENEZ":2,"JUAREZ":2,"MADERA":6,"MATACHI":1,"MEOQUI":1,"MORELOS":5,"NUEVO CASAS GRANDES":2,
+          "ROSARIO":1,"SAUCILLO":24,"TEMOSACHIC":1,"URIQUE":18,        
+        }},
+       {codigo:"23215C1",nombre:"Fomento por el respeto de los derechos indígenas",institucion:"SPCI",total:4831,data:{
+           "BATOPILAS":3,"BOCOYNA":16,"CARICHI":5,"CHIHUAHUA":241,"CUAUHTEMOC":89,"GUADALUPE Y CALVO":17,
+           "GUAZAPARES":1,"GUERRERO":1,"HIDALGO DEL PARRAL":4,"JIMENEZ":1,"MADERA":1,"MORELOS":3,"NUEVO CASAS GRANDES":1,"OJINAGA":1,"SAUCILLO":1,"URIQUE":7
+        }},
+          {codigo:"1S034A1",nombre:"Programa integral para la producción agrícola",institucion:"SPCI",total:11868,data:{
+          "BALLEZA":707,"BATOPILAS":1101,"BOCOYNA":363,"CHIHUAHUA":5,"CARICHI":126,"CHINIPAS":220,"COYAME DEL SOTOL":1,"CUAUHTEMOC":1729,"DELICIAS":996,"GUACHOCHI":1728,"GUADALUPE Y CALVO":3108,
+          "GUAZAPARES":260,"GUERRERO":482,"JIMENEZ":79,"MADERA":223,"MAGUARICHI":62,"MATACHI":250,"MORELOS":957,"MORIS":306,"OCAMPO":186,"SANTA ISABEL":244,"SATEVO":99,"TEMOSACHIC":120,
+          "URIQUE":665,"URUACHI":316
+        }},
+
+        // ===== ICHD =====
+        {codigo:"IS031A1",nombre:"Apoyos al deporte",institucion:"ICHD",total:5034,data:{
+     "AHUMADA": 6,"ALDAMA": 18,"ALLENDE": 9,"AQUILES SERDAN": 8,"ASCENSION": 15,"BOCOYNA": 9,"BUENAVENTURA": 38,"CAMARGO": 86,"CARICHI": 4,
+    "CASAS GRANDES": 31,"CHIHUAHUA": 1752,"CUAUHTEMOC": 214,"CUSIHUIRIACHI": 2,"DELICIAS": 285,"GALEANA": 9,"GUERRERO":26,"GOMEZ FARIAS": 6,
+    "GUACHOCHI": 99,"HIDALGO DEL PARRAL":236,"IGNACIO ZARAGOZA":1,"JANOS": 9,"JIMENEZ": 86,"JUAREZ": 851,"JULIMES": 1,
+    "LA CRUZ": 4,"MADERA": 26,"MATAMOROS": 3,"MEOQUI": 25,"NAMIQUIPA": 35,"NUEVO CASAS GRANDES": 115,"OJINAGA": 17,"RIVA PALACIO": 2,"ROSALES":9,
+    "SAN FRANCISCO DE CONCHOS": 9,"SAN FRANCISCO DEL ORO": 2,"SANTA BARBARA": 6,"SANTA ISABEL":14,"SAUCILLO": 34, 
+
+        }},
+
+        // ===== DIF =====
+        {codigo:"1S005A1",nombre:"Alimentación y desarrollo autosustentable de las familias",institucion:"DIF",total:192546,data:{
+          "AHUMADA":656,"ALDAMA":221,"ALLENDE":149,"AQUILES SERDAN":526,"ASCENSION":144,"BACHINIVA":213,"BALLEZA":1884,"BATOPILAS":2555,
+          "BOCOYNA":1484,"BUENAVENTURA":1013,"CAMARGO":117,"CARICHI":839,"CASAS GRANDES":253,"CHIHUAHUA":4401,"CHINIPAS":1924,
+          "CORONADO":239,"COYAME DEL SOTOL":53,"CUAUHTEMOC":1203,"CUSIHUIRIACHI":222,"DELICIAS":709,"DR. BELISARIO DOMINGUEZ":278,
+          "EL TULE":152,"GALEANA":76,"GOMEZ FARIAS":242,"GRAN MORELOS":63,"GUACHOCHI":3292,"GUADALUPE":68,"GUADALUPE Y CALVO":3781,
+          "GUAZAPARES":1036,"GUERRERO":2271,"HIDALGO DEL PARRAL":2461,"HUEJOTITAN":63,"IGNACIO ZARAGOZA":380,"JANOS":263,
+          "JIMENEZ":548,"JUAREZ":7379,"JULIMES":130,"LA CRUZ":64,"LOPEZ":41,"MADERA":391,"MAGUARICHI":343,"MANUEL BENAVIDES":3,
+          "MATACHI":101,"MATAMOROS":352,"MEOQUI":161,"MORELOS":552,"MORIS":440,"NAMIQUIPA":112,"NONOAVA":251,"NUEVO CASAS GRANDES":457,
+          "OCAMPO":219,"OJINAGA":105,"PRAXEDIS GUERRERO":88,"RIVA PALACIO":64,"ROSALES":57,"ROSARIO":313,
+          "SAN FRANCISCO DE BORJA":373,"SAN FRANCISCO DE CONCHOS":123,"SAN FRANCISCO DEL ORO":251,"SANTA BARBARA":355,
+          "SANTA ISABEL":270,"SATEVO":234,"SAUCILLO":415,"TEMOSACHIC":321,"URIQUE":1479,"URUACHI":758,"VALLE DE ZARAGOZA":81
+        }},
+        {codigo:"1S041A1",nombre:"Fortalecimiento familiar",institucion:"DIF",total:2122,data:{
+          "AQUILES SERDAN":1,"CHIHUAHUA":127,"GUACHOCHI":1,"JIMENEZ":1,
+          "MEOQUI":1,"URIQUE":1,"JUAREZ":10
+        }},
+        {codigo:"1S042A1",nombre:"Rehabilitación integral y apoyos funcionales",institucion:"DIF",total:9116,data:{
+          "ALDAMA":8,"ALLENDE":4,"AQUILES SERDAN":17,"ASCENSION":1,"BACHINIVA":2,
+          "BOCOYNA":9,"BUENAVENTURA":3,"CAMARGO":22,"CHIHUAHUA":3590,"CHINIPAS":1,
+          "CUAUHTEMOC":387,"CUSIHUIRIACHI":16,"DR. BELISARIO DOMINGUEZ":2,"GRAN MORELOS":1,"GUACHOCHI":4,"GUADALUPE":1,
+          "GUAZAPARES":1,"GUERRERO":4,"HIDALGO DEL PARRAL":5,
+          "JUAREZ":1207,"LA CRUZ":1,"LOPEZ":12,"MADERA":2,"MEOQUI":1,"NAMIQUIPA":1,"OCAMPO":1,
+          "RIVA PALACIO":3,"SAN FRANCISCO DE BORJA":1,"SAN FRANCISCO DE CONCHOS":1,
+          "SAN FRANCISCO DEL ORO":1,"SANTA ISABEL":2,"SATEVO":1,"SAUCILLO":2,"URIQUE":6,"URUACHI":1,"VALLE DE ZARAGOZA":1
+        }},
+        {codigo:"1S045A1",nombre:"Gestión social y apoyo a la ciudadanía",institucion:"DIF",total:2523,data:{
+          "AHUMADA":1,"ALDAMA":12,"AQUILES SERDAN":11,"BACHINIVA":1,"BALLEZA":3,"BATOPILAS":3,"BOCOYNA":16,"BUENAVENTURA":3,"CAMARGO":10,
+          "CARICHI":2,"CASAS GRANDES":1,"CHIHUAHUA":1673,"CHINIPAS":7,"COYAME DEL SOTOL":1,"CUAUHTEMOC":17,"DELICIAS":9,
+          "DR. BELISARIO DOMINGUEZ":4,"GALEANA":2,"GUACHOCHI":25,"GUADALUPE":3,"GUADALUPE Y CALVO":36,
+          "GUAZAPARES":6,"GUERRERO":5,"HIDALGO DEL PARRAL":11,"HUEJOTITAN":1,"JANOS":1,"JIMENEZ":8,"JUAREZ":13,"JULIMES":2,"LOPEZ":5,"LA CRUZ":1,"MADERA":2,"MAGUARICHI":1,"MANUEL BENAVIDES":3,
+          "MATACHI":6,"MATAMOROS":2,"MEOQUI":5,"MORELOS":5,"MORIS":4,"NAMIQUIPA":3,"NONOAVA":3,"NUEVO CASAS GRANDES":6,"OCAMPO":2,"OJINAGA":3,
+          "ROSALES":1,"ROSARIO":1,"SAN FRANCISCO DE BORJA":14,"SAN FRANCISCO DEL ORO":1,"SANTA BARBARA":1,"SANTA ISABEL":1,"SATEVO":1,"SAUCILLO":3,"TEMOSACHIC":5,
+          "URIQUE":8,"URUACHI":8,"VALLE DE ZARAGOZA":31
+        }},
+        {codigo:"2E093C1",nombre:"Esparcimiento para el desarrollo familiar",institucion:"DIF",total:969,data:{
+          "ALDAMA":2,"BOCOYNA":1,"CARICHI":1,"CHIHUAHUA":482,"CUAUHTEMOC":2,
+          "GUACHOCHI":2,"GUERRERO":2,"JUAREZ":149,"URIQUE":1
+        }},
+        {codigo:"1S059A1",nombre:"Juntos por la sierra",institucion:"DIF",total:120798,data:{
+          "BALLEZA":9197,"BATOPILAS":8575,"BOCOYNA":10777,"CARICHI":3722,"CHINIPAS":3089,
+          "GUACHOCHI":14950,"GUADALUPE Y CALVO":12524,"GUAZAPARES":2556,"HIDALGO DEL PARRAL":1,"JUAREZ":2,"GUERRERO":2381,"MADERA":2065,"MAGUARICHI":2366,
+          "MATACHI":1310,"MORELOS":4911,"MORIS":2812,"NONOAVA":1816,"OCAMPO":1720,"TEMOSACHIC":2506,"URIQUE":3893,"URUACHI":2622
+        }},
+        {codigo:"1S005A1",nombre:"Desayunamos juntos, come, crece y aprende",institucion:"DIF",total:15967,data:{
+           "JUAREZ":15967
+        }},
+        {codigo:"1S041A1",nombre: "Acciones que mejoran las habilidades de crianza para un desarrollo armónico",institucion:"DIF",total:6912,data:{
+          "CHIHUAHUA":6912
+        }},
+        
+        // ===== ICHDII =====
+        {codigo: "1S052A1",nombre: "Estancias infantiles para el desarrollo integral de la niñez",institucion: "ICHDII",total: 12897,data: {
+          "AHUMADA":58,"ALDAMA": 45,"AQUILES SERDAN": 41, "ASCENSION": 31,"BACHINIVA":43,"BOCOYNA": 133, "BUENAVENTURA": 88, "CAMARGO": 170,"CUSIHUIRIACHI":2,"CUAUHTEMOC": 712,
+          "CHIHUAHUA": 3233,"DELICIAS": 1202,"GALEANA": 101,"GOMEZ FARIAS": 54,"GUACHOCHI": 373, "GUADALUPE": 50, "GUADALUPE Y CALVO": 65,
+          "GUAZAPARES":70,"GUERRERO":26,"HIDALGO DEL PARRAL": 381,"JIMENEZ": 145, "JUAREZ": 4993, "JULIMES": 38, "LA CRUZ":22,"LOPEZ": 32, "MADERA": 88,"MATACHI":1,"MATAMOROS":1,"MEOQUI": 161,"NONOAVA": 47,
+          "NUEVO CASAS GRANDES": 54,"OJINAGA":54,"PRAXEDIS GUERRERO":16,"ROSALES": 37,"SANTA BARBARA": 43,"SAN FRANCISCO DEL ORO":1,"SANTA ISABEL":1,"SAUCILLO": 109,"URIQUE": 192,"VALLE DE ZARAGOZA":30
+        }},
+
+        // ===== SDHyBC =====
+        {codigo: "1S047A1",nombre: "Apoyo a personas con discapacidad",institucion: "SDHyBC",total: 7973,data: {
+          "AHUMADA": 23, "ALDAMA": 95, "ALLENDE": 72, "AQUILES SERDAN": 39, "ASCENSION": 68, "BACHINIVA": 147, "BALLEZA": 100,
+          "BATOPILAS": 80, "BOCOYNA": 255, "BUENAVENTURA": 42, "CAMARGO": 191, "CARICHI": 66,
+          "CASAS GRANDES": 46, "CORONADO": 56, "COYAME DEL SOTOL": 26, "LA CRUZ": 55, "CUAUHTEMOC": 365, "CUSIHUIRIACHI": 23,
+          "CHIHUAHUA": 1556, "CHINIPAS": 98, "DELICIAS": 462, "DR. BELISARIO DOMINGUEZ": 36, "GALEANA": 21, "SANTA ISABEL": 67,
+          "GOMEZ FARIAS": 50, "GRAN MORELOS": 20, "GUACHOCHI": 140, "GUADALUPE": 35, "GUADALUPE Y CALVO": 151,
+          "GUAZAPARES": 90, "GUERRERO": 90, "HIDALGO DEL PARRAL": 475, "HUEJOTITAN": 21, "IGNACIO ZARAGOZA": 43, "JANOS": 22,
+          "JIMENEZ": 57, "JUAREZ": 637, "JULIMES": 56, "LOPEZ": 50, "MADERA": 320, "MAGUARICHI": 27, "MANUEL BENAVIDES": 37,
+          "MATACHI": 36, "MATAMOROS": 113, "MEOQUI": 151, "MORELOS": 53, "MORIS": 75, "NAMIQUIPA": 131, "NONOAVA": 73,
+          "NUEVO CASAS GRANDES": 43, "OCAMPO": 56, "OJINAGA": 64, "PRAXEDIS GUERRERO": 23, "RIVA PALACIO": 44,
+          "ROSALES": 115, "ROSARIO": 13, "SAN FRANCISCO DE BORJA": 51, "SAN FRANCISCO DE CONCHOS": 24,
+          "SAN FRANCISCO DEL ORO": 41, "SANTA BARBARA": 113, "SATEVO": 86, "SAUCILLO": 83, "TEMOSACHIC": 57, "EL TULE": 33,
+          "URIQUE": 69, "URUACHI": 75, "VALLE DE ZARAGOZA": 87
+       }},
+        {codigo: "1S027A1", nombre: "Apoyo a personas mayores", institucion: "SDHyBC", total: 10711, data: {
+  "AHUMADA": 50, "ALDAMA":110, "ALLENDE": 61, "AQUILES SERDAN": 95, "ASCENSION": 110, "BACHINIVA": 74, "BALLEZA": 177, "BATOPILAS": 161, "BOCOYNA": 398,
+  "BUENAVENTURA":106, "CAMARGO": 244, "CARICHI": 110, "CASAS GRANDES": 80, "CORONADO": 92, "COYAME DEL SOTOL": 50, "EL TULE": 44, "CUAUHTEMOC": 403, "CUSIHUIRIACHI": 59,
+  "CHIHUAHUA": 2570, "CHINIPAS": 60, "DELICIAS": 515, "DR. BELISARIO DOMINGUEZ": 50, "GALEANA": 51, "SANTA ISABEL": 50, "GOMEZ FARIAS": 46, "GRAN MORELOS": 47,
+  "GUACHOCHI": 242, "GUADALUPE": 51, "GUADALUPE Y CALVO": 302, "GUAZAPARES": 85, "GUERRERO": 175, "HIDALGO DEL PARRAL": 791, "HUEJOTITAN": 42, "IGNACIO ZARAGOZA": 60,
+  "JANOS": 55, "JIMENEZ": 117, "JUAREZ": 689, "JULIMES": 50,"LA CRUZ":46, "LOPEZ": 35, "MADERA": 166, "MAGUARICHI": 52, "MANUEL BENAVIDES": 28, "MATACHI": 50, "MATAMOROS": 90,
+  "MEOQUI": 242, "MORELOS": 30, "MORIS": 57, "NAMIQUIPA": 81, "NONOAVA": 90, "NUEVO CASAS GRANDES": 100, "OCAMPO": 30, "OJINAGA": 118, "PRAXEDIS GUERRERO": 50,
+  "RIVA PALACIO": 124, "ROSALES": 146, "ROSARIO": 30, "SAN FRANCISCO DE BORJA": 56, "SAN FRANCISCO DE CONCHOS": 40, "SAN FRANCISCO DEL ORO": 20, "SANTA BARBARA": 86,
+  "SATEVO": 80, "SAUCILLO": 137, "TEMOSACHIC": 40,"URIQUE": 125, "URUACHI": 51 , "VALLE DE ZARAGOZA": 40
+        }},
+        {codigo: "2E027C1", nombre: "Fortalecimiento comunitario y participación ciudadana", institucion: "SDHyBC", total: 34042, data: {
+  "AHUMADA": 1, "ALDAMA": 196, "ALLENDE": 317, "AQUILES SERDAN": 414, "ASCENSION": 378, "BACHINIVA":3,"BALLEZA": 313, "BATOPILAS": 262, "BOCOYNA": 1320, 
+  "BUENAVENTURA":223,"CAMARGO": 950, "CARICHI": 27, "CASAS GRANDES": 144, "CUAUHTEMOC": 505, "COYAME DEL SOTOL":20,"CHIHUAHUA": 16298, "DELICIAS": 1028,"EL TULE":1,"GRAN MORELOS":2,"GUACHOCHI": 485, 
+  "GUADALUPE":1, "GUADALUPE Y CALVO": 568, "GUERRERO": 370, "HIDALGO DEL PARRAL": 1428,"HUEJOTITAN":3, "JANOS": 92, "JIMENEZ": 436, "JUAREZ": 262,"JULIMES":5,"LOPEZ":3,"MADERA": 172, 
+  "MAGUARICHI": 74, "MANUEL BENAVIDES":296,"MEOQUI":1240,"MATAMOROS": 133, "MORIS": 196,"NAMIQUIPA":9, "NONOAVA": 332, "NUEVO CASAS GRANDES": 268, "OCAMPO":2,"OJINAGA": 139, "RIVA PALACIO": 254,"ROSALES":15, 
+  "SAN FRANCISCO DE BORJA":3,"SAN FRANCISCO DE CONCHOS":264,"SAN FRANCISCO DEL ORO":2,"SANTA BARBARA": 4,"SANTA ISABEL":5,"SATEVO":335, "SAUCILLO": 3,"TEMOSACHIC":366,"URIQUE":719,"URUACHI":1,"VALLE DE ZARAGOZA":308
+        }},
+        {codigo: "1S054A1", nombre: "Atención a niños, niñas, adolescentes y juventudes", institucion: "SDHyBC", total: 193, data: {
+  "CHIHUAHUA":100,"JUAREZ":93
+        }},
+        {codigo: "2F054C1", nombre: "Proyectos productivos y economía solidaria", institucion: "SDHyBC", total: 3573, data: {
+  "ALDAMA": 7,"BOCOYNA": 64,"CAMARGO": 260,"CUAUHTEMOC": 6,"CASAS GRANDES":67, "CORONADO":266,"CHIHUAHUA": 68, "DELICIAS":105,"HIDALGO DEL PARRAL": 116, "JIMENEZ": 473, "JUAREZ": 7, "JULIMES":50,"LA CRUZ":250,"LOPEZ":150,
+  "MAGUARICHI":60,"MEOQUI":267, "NUEVO CASAS GRANDES": 114,"ROSALES":75, "SAN FRANCISCO DE CONCHOS": 119, "SAUCILLO": 200, "VALLE DE ZARAGOZA":183
+        }},
+          {codigo: "1S028A1", nombre: "Juntos sí podemos", institucion: "SDHyBC", total: 24996, data: {
+  "JUAREZ":22419," AHUMADA":28,"ASCENSION":161,"PRAXEDIS GUERRERO":1,"GUADALUPE":20,"JANOS":192
+        }},
+        {codigo: "1S025A1", nombre: "Desarrollo humano", institucion: "SDHyBC", total: 1871, data: {
+  "AHUMADA":6,"ALDAMA": 5, "ALLENDE": 7, "AQUILES SERDAN": 7, "ASCENSION": 10,"BACHINIVA":6, "BALLEZA": 9, "BATOPILAS": 41, "BOCOYNA": 9, "BUENAVENTURA": 12, "CAMARGO": 19,
+  "CARICHI":4,"CASAS GRANDES": 6, "CUAUHTEMOC": 150, "CHIHUAHUA": 468, "CHINIPAS":7,"CORONADO":2,"COYAME DEL SOTOL":1,"DELICIAS": 126,"CUSIHUIRIACHI":8,
+  "DR. BELISARIO DOMINGUEZ":4,"EL TULE":4,"GALEANA":4,"GOMEZ FARIAS":7,"GRAN MORELOS":3,"GUACHOCHI":40,"GUADALUPE Y CALVO":130,"GUAZAPARES":4,"GUERRERO":100,
+  "HIDALGO DEL PARRAL":61,"HUEJOTITAN":1,"IGNACIO ZARAGOZA":3,"JANOS":8,"JIMENEZ":11,"JUAREZ":166,"JULIMES":5,"LA CRUZ":4,"LOPEZ":3,"MADERA":19,"MANUEL BENAVIDES":3,
+  "MATACHI":3,"MATAMOROS":3,"MEOQUI":92,"MORELOS":15,"MORIS":59,"NAMIQUIPA":11,"NONOAVA":3,"NUEVO CASAS GRANDES":27,"OCAMPO":8 ,"OJINAGA":7,"RIVA PALACIO":2,"ROSALES":9,
+  "ROSARIO":4,"SAN FRANCISCO DE BORJA":2,"SAN FRANCISCO DE CONCHOS":2,"SAN FRANCISCO DEL ORO":7,"SANTA BARBARA":6,"SANTA ISABEL":4,"SATEVO":3,"SAUCILLO":19,
+  "TEMOSACHIC":5,"URIQUE":11,"URUACHI":7,"VALLE DE ZARAGOZA":4
+        }},
+
+    // ===== SDR =====
+        {codigo: "2F004C1", nombre: "Fomento agrícola", institucion: "SDR", total:0, data: {
+  "NO IDENTIFICADO":0
+        }},
+        {codigo: "1S053B1", nombre: "Atención a la sequía", institucion: "SDR", total: 7781, data: {
+  "AHUMADA": 26,"ALDAMA":300,"ALLENDE":75,"AQUILES SERDAN":12,"BACHINIVA": 190,"BALLEZA":158,"BATOPILAS":35,"BOCOYNA":79,"BUENAVENTURA":149,"CAMARGO": 134,"CARICHI":276,"CASAS GRANDES": 65,
+  "CORONADO": 11,"DR. BELISARIO DOMINGUEZ": 69,"CHIHUAHUA":308,"CHINIPAS":40,"CORONADO":11,"COYAME DEL SOTOL":18,"CUAUHTEMOC":508,"CUSIHUIRIACHI":332,"DELICIAS":28,"DR. BELISARIO DOMINGUEZ":125,
+  "EL TULE":77,"GALEANA":46,"GOMEZ FARIAS":131,"GRAN MORELOS":68,"GUACHOCHI":62,"GUADALUPE":23,"GUADALUPE Y CALVO":6,"GUAZAPARES":21,"GUERRERO":663,
+  "HIDALGO DEL PARRAL":124,"HUEJOTITAN":73,"IGNACIO ZARAGOZA":116,"JANOS":59,"JIMENEZ":19,"JUAREZ":67,"JULIMES":100,"LA CRUZ":53,"LOPEZ":18,"MADERA":77,
+  "MAGUARICHI":208,"MANUEL BENAVIDES": 65,"MATACHI":59,"MATAMOROS":65,"MEOQUI":125,"MORELOS":1,"MORIS":80,"NAMIQUIPA":622,"NONOAVA":65,
+  "NUEVO CASAS GRANDES": 72,"OCAMPO":80,"OJINAGA":73,"PRAXEDIS GUERRERO":33,"RIVA PALACIO":175,"ROSALES": 69,"ROSARIO":79,"SAN FRANCISCO DE BORJA": 164,
+  "SAN FRANCISCO DE CONCHOS":57,"SAN FRANCISCO DEL ORO":52,"SANTA BARBARA":63,"SANTA ISABEL":314,"SATEVO":112,"SAUCILLO":90,"TEMOSACHIC":137,"URIQUE":19,"URUACHI":80,"VALLE DE ZARAGOZA":117
+        }},
+        {codigo: "1S019B1", nombre: "Desarrollo forestal sustentable", institucion: "SDR", total: 0, data: {
+  "NO IDENTIFICADO":0
+        }},
+        {codigo: "1S017B1", nombre: "Desarrollo rural sustentable", institucion: "SDR", total:0, data: {
+ "NO IDENTIFICADO":0
+        }},
+        {codigo: "2F052C1", nombre: "Desarrollo de productores agropecuarios, agroindustriales, agrícolas y forestales", institucion: "SDR", total:0, data: {
+   "NO IDENTIFICADO":0
+        }},
+        {codigo: "2E084C1", nombre: "Mecanización del campo", institucion: "SDR", total: 0, data: {
+ "NO IDENTIFICADO":0
+        }},
+        {codigo: "1S020B1", nombre: "Uso sustentable del agua", institucion: "SDR", total: 0, data: {
+ "NO IDENTIFICADO":0
+        }},
+        {codigo: "2F012B1", nombre: "Fomento de los agronegocios y valor agregado", institucion: "SDR", total: 0, data: {
+ "NO IDENTIFICADO":0
+        }},
+        {codigo: "1S014B2", nombre: "Subsidios a la producción, equipamiento e infraestructura", institucion: "SDR", total: 18961, data: {
+   "NO IDENTIFICADO":0
+        }},
+        // ===== TRABAJO =====
+        {codigo: "1S037A1", nombre: "Apoyos para el empleo", institucion: "TRABAJO", total: 13673, data: {
+      "AHUMADA":19,"BACHINIVA":21,"BALLEZA": 2,"CARICHI": 20, "CHIHUAHUA": 69, "EL TULE":15,"GUACHOCHI": 19, "GUADALUPE": 21,"GUAZAPARES": 21, "GUERRERO": 50, "HIDALGO DEL PARRAL": 25, 
+      "HUEJOTITAN":16,"JUAREZ": 242,"MADERA": 50, "MAGUARICHI": 25, "MATACHI": 47,"MORIS": 73, "NONOAVA": 50, "OCAMPO": 75, "RIVA PALACIO": 20,  "SAN FRANCISCO DE BORJA": 46, 
+      "SANTA BARBARA":21,"SANTA ISABEL": 21, "TEMOSACHIC": 74, "URIQUE": 22
+        }},
+
+        // ===== CULTURA =====
+        {codigo: "1S012A1",nombre: "Apoyos a la cultura",institucion: "CULTURA",total: 186,data: {
+          "CHIHUAHUA":186
+        }},
+
+        // ===== COESVI =====
+        {codigo: "1S015A1",nombre: "Apoyos sociales en vivienda",institucion: "COESVI",total:0,data: {
+    "NO IDENTIFICADO":0
+        }},
+        {codigo: "2E086C1",nombre: "Vivienda digna",institucion: "COESVI",total:0,data: {
+    "NO IDENTIFICADO":0
+        }},
+
+        // ===== COESPO =====
+        {codigo:"1S046A1",nombre:"Apoyo integral a migrantes",institucion: "COESPO",total:12268,data: {
+    "JUAREZ": 305,"CHIHUAHUA": 2
+        }},
+
+        // ===== SALUD =====
+        {codigo: "2E166C1",nombre: "Atención médica",institucion: "MEDICHIHUAHUA",total: 610552,data: {
+    "AHUMADA": 5379,"ALDAMA": 11722,"ALLENDE": 527,"AQUILES SERDAN": 2324,"ASCENSION": 9063,"BACHINIVA": 3586,"BALLEZA": 5605,"BATOPILAS": 4224,
+    "BOCOYNA": 11311,"BUENAVENTURA": 8185,"CAMARGO": 15147,"CARICHI": 4243,"CASAS GRANDES": 4401,"CORONADO":1613,"COYAME DEL SOTOL":1158,"LA CRUZ":2709,"CUAUHTEMOC":42285,"CUSIHUIRIACHI":862,"CHIHUAHUA": 140236,"CHINIPAS": 2468,
+    "DELICIAS": 21273,"DR. BELISARIO DOMINGUEZ": 1035,"EL TULE": 1560,"GALEANA": 2585,"GOMEZ FARIAS": 4698,"GRAN MORELOS": 1480,"GUACHOCHI": 15385,"GUADALUPE":2342,"GUADALUPE Y CALVO": 12735,"GUAZAPARES": 4529,
+    "GUERRERO": 15197,"HIDALGO DEL PARRAL": 25389,"HUEJOTITAN": 874,"IGNACIO ZARAGOZA": 3242,"JANOS": 3415,"JIMENEZ": 18143,"JUAREZ": 133127,"JULIMES": 2594,
+    "LOPEZ": 3219,"MADERA": 8759,"MAGUARICHI": 821,"MANUEL BENAVIDES": 1133,"MATACHI": 1408,"MATAMOROS": 3445,"MEOQUI": 11392,"MORELOS": 705,
+    "MORIS":2437,"NAMIQUIPA": 8606,"NONOAVA": 1460,"NUEVO CASAS GRANDES": 12589,"OCAMPO": 4446,
+    "OJINAGA": 12079,"PRAXEDIS GUERRERO": 3255,"RIVA PALACIO": 1123,"ROSALES": 4318,"ROSARIO":653,"SAN FRANCISCO DE BORJA": 1461,
+    "SAN FRANCISCO DE CONCHOS": 2339,"SAN FRANCISCO DEL ORO": 2315,"SANTA BARBARA": 3914,"SANTA ISABEL": 3212,"SATEVO": 2536,
+    "SAUCILLO": 8717,"TEMOSACHIC": 2214,"URIQUE": 7016,"URUACHI": 2632,"VALLE DE ZARAGOZA": 4486
+        }},
+
+         // ===== SEECH =====
+      {codigo: "SE206C1",nombre: "Cobertura en educación inclusiva",institucion: "SEECH",total:2055,data: {
+        "ALDAMA":42,"BALLEZA":50,"BOCOYNA":50,"CARICHI":274,"CHIHUAHUA":28,"CHINIPAS":48,"GUACHOCHI":454,"GUADALUPE Y CALVO":50,"GUERRERO":50,"JANOS":46,"JULIMES":43,"MADERA":40,
+        "MAGUARICHI":50,"MEOQUI":50,"ROSALES":43,"SAUCILLO":516,"URIQUE":113,"URUACHI":50,"VALLE DE ZARAGOZA":39
+      }},
+
+        // ===== TURISMO =====
+      {codigo: "2F011C1",nombre: "Desarrollo turístico",institucion: "TURISMO",total:56,data: {
+        "ALDAMA":2,"BALLEZA":1,"BOCOYNA":2,"CAMARGO":2,"CASAS GRANDES":1,"CHIHUAHUA":23,"CUAUHTEMOC":9,"DELICIAS":7,
+        "GOMEZ FARIAS":2,"GRAN MORELOS":1,"GUACHOCHI":2,"GUERRERO":1,"HIDALGO DEL PARRAL":2,"JIMENEZ":3,"JUAREZ":4,"MADERA":2,
+        "NAMIQUIPA":1,"OJINAGA":4,"SAN FRANCISCO DE CONCHOS":1,"SANTA ISABEL":1,"TEMOSACHIC":1
+      }}
+
+      ],
+    };
+
+    // ===== COORDENADAS (67 municipios + alias usados en los datos) =====
+    const coords={
+      "AHUMADA":[30.48,-106.51],"ALDAMA":[28.84,-105.93],"ALLENDE":[26.93,-105.38],"AQUILES SERDAN":[28.5833,-105.833],
+      "ASCENSION":[31.10,-107.86],"BACHINIVA":[28.78,-107.25],"BALLEZA":[26.96,-106.32],"BATOPILAS":[27.02,-107.74],
+      "BOCOYNA":[27.78,-107.59],"BUENAVENTURA":[30.16,-107.47],"CAMARGO":[27.67,-105.17],"CARICHI":[27.89,-107.08],
+      "CASAS GRANDES":[30.37,-107.95],"CHIHUAHUA":[28.64,-106.08],"CHINIPAS":[27.40,-108.52],"CORONADO":[26.68,-105.35],
+      "COYAME DEL SOTOL":[29.45,-105.10],"CUAUHTEMOC":[28.41,-106.87],"CUSIHUIRIACHI":[28.25,-106.97],"DELICIAS":[28.19,-105.47],
+      "DR. BELISARIO DOMINGUEZ":[28.30,-106.55],"DR. BELISARIO DOMINGUEZ":[28.30,-106.55],
+      "EL TULE":[26.77,-106.33],"GALEANA":[30.17,-106.40],"GOMEZ FARIAS":[29.30,-107.72],"GRAN MORELOS":[28.15,-106.15],
+      "GUACHOCHI":[26.82,-107.09],"GUADALUPE":[31.44,-106.14],"GUADALUPE Y CALVO":[26.09,-106.96],"GUAZAPARES":[27.54,-108.27],"GUERRERO":[28.55,-107.48],
+      "HIDALGO DEL PARRAL":[26.93,-105.67],"HUEJOTITAN":[27.16,-106.06],"IGNACIO ZARAGOZA":[29.70,-107.63],"JANOS":[30.88,-108.20],
+      "JIMENEZ":[27.13,-104.91],"JUAREZ":[31.69,-106.42],"JULIMES":[28.43,-105.43],"LA CRUZ":[27.28,-105.19],
+      "LOPEZ":[26.95,-105.42],"MADERA":[29.20,-108.14],"MAGUARICHI":[27.85,-107.92],"MATACHI":[28.60,-108.13],
+      "MATAMOROS":[27.03,-105.03],"MANUEL BENAVIDES":[29.18,-103.92],"MEOQUI":[28.27,-105.47],"MORELOS":[26.41,-107.55],"MORIS":[28.35,-108.52],
+      "NAMIQUIPA":[29.25,-107.42],"NONOAVA":[27.49,-107.48],"NUEVO CASAS GRANDES":[30.42,-107.91],"OCAMPO":[28.20,-108.37],
+      "OJINAGA":[29.56,-104.41],"PRAXEDIS GUERRERO":[31.36,-106.01],"RIVA PALACIO":[28.70,-107.15],"ROSALES":[28.35,-105.58],"ROSARIO":[27.94,-107.98],
+      "SAN FRANCISCO DE BORJA":[27.66,-107.52],"SAN FRANCISCO DE CONCHOS":[27.39,-105.26],"SAN FRANCISCO DEL ORO":[26.93,-105.78],
+      "SANTA BARBARA":[26.80,-105.82],"SANTA ISABEL":[28.34,-106.39],"SATEVO":[27.74,-106.18],"SAUCILLO":[28.03,-105.29],
+      "TEMOSACHIC":[28.98,-107.85],"URIQUE":[27.26,-107.92],"URUACHI":[27.91,-108.53],"VALLE DE ZARAGOZA":[27.55,-105.85]
+    };
+    
+
+    // ===== UTILIDADES =====
+    function colorRGY(v, min, max) {
+      if (v <= 0) return "#f0f0f0";
+      const t = (Math.log(v) - Math.log(min)) / (Math.log(max) - Math.log(min));
+      let r, g, b;
+      if (t < 0.5) {
+        r = 255;
+        g = Math.round(t * 2 * 255);
+        b = 0;
+      } else {
+        r = Math.round(255 * (2 - t * 2));
+        g = 255;
+        b = 0;
+      }
+      const h = n => n.toString(16).padStart(2, "0");
+      return `#${h(r)}${h(g)}${h(b)}`;
+    }
+
+    function radiusByValue(v) {
+      return v > 1000 ? 22 : v > 500 ? 18 : v > 100 ? 14 : v > 50 ? 11 : v > 10 ? 9 : v >= 5 ? 7 : 6;
+    }
+
+    // ===== FUNCIÓN PARA HACER ZOOM A UN MUNICIPIO =====
+    function zoomToMunicipality(municipioName) {
+      if (coords[municipioName]) {
+        map.setView(coords[municipioName], 10, {
+          animate: true,
+          duration: 1
+        });
+      }
+    }
+
+    // ===== MAPA =====
+    const map = L.map("map", {
+      center: [28.6, -106.5],
+      zoom: 7,
+      zoomControl: false,        // Sin controles de zoom
+      dragging: false,           // Sin arrastre
+      scrollWheelZoom: false,    // Sin zoom con scroll
+      doubleClickZoom: false,    // Sin zoom con doble click
+      touchZoom: false,          // Sin zoom táctil
+      boxZoom: false,            // Sin zoom por área
+      keyboard: false,           // Sin navegación por teclado
+      minZoom: 7,              // Zoom mínimo
+      maxZoom: 7               // Zoom máximo (fijo)
+    });
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "© OpenStreetMap contributors"
+    }).addTo(map);
+    const layer = L.layerGroup().addTo(map);
+
+    const yearSelect = document.getElementById("yearSelect");
+    const institutionSelect = document.getElementById("institutionSelect");
+    const programSelect = document.getElementById("programSelect");
+
+    function updateHeader() {
+      // Header estático en el nuevo diseño - no se actualiza
+      // const yr = yearSelect.value;
+      // const inst = institutionSelect.value || "—";
+      // document.getElementById("title").textContent = `Cobertura Estatal ${yr} – ${inst}`;
+    }
+
+    function fillInstitutions(updateHeaderNow = true) {
+  institutionSelect.innerHTML = "";
+  const yr = yearSelect.value;
+  const instituciones = [...new Set(data[yr].map(p => p.institucion))];
+  instituciones.forEach(inst => {
+    const o = document.createElement("option");
+    o.value = inst;
+    o.textContent = inst;
+    institutionSelect.appendChild(o);
+  });
+  if (updateHeaderNow) {
+    updateHeader();
+  }
+}
+
+    function fillPrograms() {
+      programSelect.innerHTML = "";
+      const yr = yearSelect.value;
+      const inst = institutionSelect.value;
+      data[yr].forEach((p, idx) => {
+        if (p.institucion === inst) {
+          const o = document.createElement("option");
+          o.value = String(idx);
+          o.textContent = `${p.codigo} – ${p.nombre}`;
+          programSelect.appendChild(o);
+        }
+      });
+      updateHeader();
+    }
+
+function render(preserveView = false) {
+  const yr = yearSelect.value;
+  const idx = parseInt(programSelect.value, 10);
+
+  let p;
+  if (Number.isNaN(idx)) {
+    const realIndex = data[yr].findIndex(x => x.institucion === institutionSelect.value);
+    if (realIndex >= 0) {
+      programSelect.value = String(realIndex);
+      p = data[yr][realIndex];
+    } else {
+      return;
+    }
+  } else {
+    p = data[yr][idx];
+  }
+  if (!p) return;
+
+  // **GUARDAR VISTA SI SE DEBE PRESERVAR**
+  let savedCenter, savedZoom;
+  if (preserveView) {
+    savedCenter = map.getCenter();
+    savedZoom = map.getZoom();
+  }
+
+      const allEntries = Object.entries(p.data || {});
+
+      // Sin datos por municipio
+      if (allEntries.length === 0) {
+        document.getElementById("statTotal").textContent = (p.total || 0).toLocaleString("es-MX");
+        document.getElementById("statMunicipios").textContent = 0;
+        document.getElementById("statCobertura").textContent = "0%";
+        document.getElementById("statCapital").textContent = "0%";
+        document.getElementById("benefTotal").innerHTML = `Total de beneficiarios: ${(p.total || 0).toLocaleString("es-MX")} · <span style="color:#6c757d">Sin datos por municipio</span>`;
+        document.getElementById("municipalityList").innerHTML = `<div class="municipality-item" style="justify-content:center"><em style="color:#6c757d">Este programa no tiene datos desagregados por municipio.</em></div>`;
+        document.getElementById("municipiosAusentes").innerHTML = `<em>No hay datos municipales disponibles para análisis.</em>`;
+        document.getElementById("municipiosAusentes").className = "ausentes-content";
+        layer.clearLayers();
+        return;
+      }
+
+      const valsAll = allEntries.map(([_, v]) => v);
+      const minAll = Math.min(...valsAll), maxAll = Math.max(...valsAll);
+
+      // ==== CÁLCULO DE BENEFICIARIOS NO IDENTIFICADOS ====
+      const sumaMunicipios = Object.values(p.data).reduce((a, b) => a + (b || 0), 0);
+      
+      // Usar valor manual de sinIdentificar si existe, si no, calcular automáticamente
+      let diferencia;
+      if (p.sinIdentificar !== undefined) {
+        diferencia = p.sinIdentificar;
+      } else {
+        diferencia = (p.total || 0) - sumaMunicipios;
+      }
+
+      const oldWarnings = document.querySelectorAll(".leyenda-noident");
+      oldWarnings.forEach(el => el.remove());
+
+      const leyendaNoIdentificados = document.createElement("div");
+      leyendaNoIdentificados.className = "leyenda-noident";
+
+      if (diferencia > 0) {
+        leyendaNoIdentificados.style.color = "#dc3545";
+        leyendaNoIdentificados.style.background = "linear-gradient(135deg, #f8d7da, #f5c6cb)";
+        leyendaNoIdentificados.style.borderColor = "#dc3545";
+        leyendaNoIdentificados.innerHTML = `⚠️ <strong>${diferencia.toLocaleString("es-MX")}</strong> beneficiarios no identificados`;
+      } else if (diferencia < 0) {
+        leyendaNoIdentificados.style.color = "#ff9800";
+        leyendaNoIdentificados.style.background = "linear-gradient(135deg, #fff3cd, #ffe8a1)";
+        leyendaNoIdentificados.style.borderColor = "#ff9800";
+        leyendaNoIdentificados.innerHTML = `⚠️ Total municipal excede por <strong>${Math.abs(diferencia).toLocaleString("es-MX")}</strong>`;
+      } else {
+        leyendaNoIdentificados.style.color = "#28a745";
+        leyendaNoIdentificados.style.background = "linear-gradient(135deg, #d4edda, #c3e6cb)";
+        leyendaNoIdentificados.style.borderColor = "#28a745";
+        leyendaNoIdentificados.innerHTML = `✔️ Todos los beneficiarios están identificados`;
+      }
+
+      const benefDiv = document.getElementById("benefTotal");
+      benefDiv.parentNode.insertBefore(leyendaNoIdentificados, benefDiv.nextSibling);
+
+      // ==== DETECTAR MUNICIPIOS AUSENTES ====
+      const todosMunicipios = Object.keys(coords);
+      const excludedSet = new Set(p.excluded || []);
+      const municipiosPrograma = Object.keys(p.data || {});
+
+      const municipiosAusentes = [];
+      const municipiosCero = [];
+
+      todosMunicipios.forEach(mun => {
+        if (!municipiosPrograma.includes(mun)) {
+          municipiosAusentes.push(mun);
+        } else if (p.data[mun] === 0) {
+          municipiosCero.push(mun);
+        }
+      });
+
+      const totalSinCobertura = municipiosAusentes.length + municipiosCero.length;
+      const ausentesDiv = document.getElementById("municipiosAusentes");
+
+      if (totalSinCobertura === 0) {
+        ausentesDiv.className = "ausentes-content vacio";
+        ausentesDiv.innerHTML = `✓ <strong>¡Cobertura completa!</strong> Los 67 municipios tienen beneficiarios registrados.`;
+      } else {
+        ausentesDiv.className = "ausentes-content";
+        let html = `<strong>${totalSinCobertura} de 67 municipios sin cobertura:</strong><br><br>`;
+
+        if (municipiosAusentes.length > 0) {
+          html += `<strong>Sin datos (${municipiosAusentes.length}):</strong> `;
+          html += municipiosAusentes.sort().join(", ");
+        }
+
+        if (municipiosCero.length > 0) {
+          if (municipiosAusentes.length > 0) html += `<br><br>`;
+          html += `<strong>Con valor 0 (${municipiosCero.length}):</strong> `;
+          html += municipiosCero.sort().join(", ");
+        }
+
+        ausentesDiv.innerHTML = html;
+      }
+
+      // Entradas para KPIs
+      const entries = allEntries.filter(([m, _]) => !excludedSet.has(m));
+      const activos = entries.filter(([_, v]) => v > 0).length;
+
+      const total = p.total || valsAll.reduce((a, b) => a + b, 0);
+      const cobertura = Math.round((activos / 67) * 1000) / 10;
+      const capital = (p.data["CHIHUAHUA"] || 0);
+      const concCap = total > 0 ? Math.round((capital / total) * 1000) / 10 : 0;
+
+      document.getElementById("statTotal").textContent = total.toLocaleString("es-MX");
+      document.getElementById("statMunicipios").textContent = activos;
+      document.getElementById("statCobertura").textContent = `${cobertura}%`;
+      document.getElementById("statCapital").textContent = `${concCap}%`;
+      document.getElementById("benefTotal").innerHTML = `Total de beneficiarios: <strong>${total.toLocaleString("es-MX")}</strong>`;
+
+      const list = document.getElementById("municipalityList");
+      list.innerHTML = "";
+      layer.clearLayers();
+      const bounds = [];
+
+      // Marcadores
+      allEntries.sort((a, b) => b[1] - a[1]).forEach(([m, v]) => {
+        if (!coords[m]) return;
+        const color = colorRGY(v, Math.max(1, minAll), Math.max(1, maxAll));
+        const r = radiusByValue(v);
+        const extra = excludedSet.has(m) ? "<br><em style='color:#ffc107'>(Fuera de Chihuahua)</em>" : "";
+        
+        L.circleMarker(coords[m], {
+          radius: r,
+          fillColor: color,
+          color: "#fff",
+          weight: 3,
+          fillOpacity: 0.9
+        })
+          .addTo(layer)
+          .bindTooltip(`<strong>${m}</strong><br>${v.toLocaleString("es-MX")} beneficiarios${extra}`, {
+            permanent: false,
+            direction: 'top'
+          });
+        bounds.push(coords[m]);
+      });
+
+      // Lista lateral CON FUNCIONALIDAD DE CLICK
+      entries.sort((a, b) => b[1] - a[1]).forEach(([m, v]) => {
+        const c = colorRGY(v, Math.max(1, minAll), Math.max(1, maxAll));
+        const row = document.createElement("div");
+        row.className = "municipality-item";
+        row.style.borderLeftColor = c;
+        row.innerHTML = `<span>${m}</span><strong>${v.toLocaleString("es-MX")}</strong>`;
+        
+        // ===== AGREGAR EVENTO CLICK =====
+        row.addEventListener("click", () => {
+          zoomToMunicipality(m);
+        });
+        
+        list.appendChild(row);
+      });
+
+      // ZOOM FIJO: Se comentó el ajuste automático de zoom
+      // El mapa mantiene el zoom inicial (6.5) sin cambios
+      /*
+      if (!preserveView) {
+      map.fitBounds(bounds.map(x => L.latLng(x[0], x[1])), { padding: [30, 30], maxZoom: 8 });
+    } else {
+      map.setView(savedCenter, savedZoom, { animate: false });
+    }
+    */
+  }
+
+// ======== SINCRONIZACIÓN ENTRE AÑOS ========
+yearSelect.addEventListener("change", () => {
+  const oldYear = yearSelect.value === "2024" ? "2025" : "2024";
+  const oldInst = institutionSelect.value;
+  const oldIdx = parseInt(programSelect.value, 10);
+  const oldProg = data[oldYear]?.[oldIdx];
+  const oldCode = oldProg?.codigo;
+  const oldName = oldProg?.nombre?.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+  const newYear = yearSelect.value;
+  fillInstitutions(false); // **NO actualizar header todavía**
+
+  const instExists = (data[newYear] || []).some(p => p.institucion === oldInst);
+  if (instExists) {
+    institutionSelect.value = oldInst;
+    fillPrograms();
+
+    let matchIdx = (data[newYear] || []).findIndex(
+      p => p.institucion === oldInst && p.codigo === oldCode
+    );
+
+    if (matchIdx < 0 && oldName) {
+      matchIdx = (data[newYear] || []).findIndex(p => {
+        const nameNorm = p.nombre?.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        return p.institucion === oldInst && (nameNorm.includes(oldName) || oldName.includes(nameNorm));
+      });
+    }
+
+    if (matchIdx < 0) {
+      matchIdx = (data[newYear] || []).findIndex(p => p.institucion === oldInst);
+    }
+
+    if (matchIdx >= 0) {
+      programSelect.value = String(matchIdx);
+    }
+  } else {
+    fillPrograms();
+  }
+
+  updateHeader(); // **Actualizar header AHORA con la institución correcta**
+  render(true);
+});
+
+institutionSelect.addEventListener("change", () => {
+  fillPrograms();
+  updateHeader(); // **Agregar updateHeader aquí también**
+  render();
+});
+
+programSelect.addEventListener("change", () => {
+  render();
+});
+
+
+// ============================================
+// SISTEMA DE CONFIGURACIÓN MANUAL - MAPA DE COBERTURA TERRITORIAL
+// ============================================
+
+// Lista completa de los 67 municipios de Chihuahua
+const MUNICIPIOS_CHIHUAHUA = [
+  "AHUMADA", "ALDAMA", "ALLENDE", "AQUILES SERDAN", "ASCENSION", "BACHINIVA", "BALLEZA", "BATOPILAS",
+  "BOCOYNA", "BUENAVENTURA", "CAMARGO", "CARICHI", "CASAS GRANDES", "CHIHUAHUA", "CHINIPAS", "CORONADO",
+  "COYAME DEL SOTOL", "CUAUHTEMOC", "CUSIHUIRIACHI", "DELICIAS", "DR. BELISARIO DOMINGUEZ", "EL TULE",
+  "GALEANA", "GOMEZ FARIAS", "GRAN MORELOS", "GUACHOCHI", "GUADALUPE", "GUADALUPE Y CALVO", "GUAZAPARES",
+  "GUERRERO", "HIDALGO DEL PARRAL", "HUEJOTITAN", "IGNACIO ZARAGOZA", "JANOS", "JIMENEZ", "JUAREZ",
+  "JULIMES", "LA CRUZ", "LOPEZ", "MADERA", "MAGUARICHI", "MANUEL BENAVIDES", "MATACHI", "MATAMOROS",
+  "MEOQUI", "MORELOS", "MORIS", "NAMIQUIPA", "NONOAVA", "NUEVO CASAS GRANDES", "OCAMPO", "OJINAGA",
+  "PRAXEDIS GUERRERO", "RIVA PALACIO", "ROSALES", "ROSARIO", "SAN FRANCISCO DE BORJA",
+  "SAN FRANCISCO DE CONCHOS", "SAN FRANCISCO DEL ORO", "SANTA BARBARA", "SANTA ISABEL", "SATEVO",
+  "SAUCILLO", "TEMOSACHIC", "URIQUE", "URUACHI", "VALLE DE ZARAGOZA"
+];
+
+let valoresManualesMapa = {
+  '2024': {},
+  '2025': {}
+};
+
+// Cargar valores guardados desde localStorage
+function cargarValoresManualesMapa() {
+  try {
+    const guardados = localStorage.getItem('valoresManualesMapa');
+    if (guardados) {
+      valoresManualesMapa = JSON.parse(guardados);
+      console.log('📂 Valores de mapa de cobertura cargados desde localStorage');
+    }
+  } catch (e) {
+    console.error('Error cargando configuración mapa:', e);
+  }
+}
+
+// Guardar valores en localStorage
+function guardarValoresMapa() {
+  try {
+    localStorage.setItem('valoresManualesMapa', JSON.stringify(valoresManualesMapa));
+    console.log('💾 Valores de mapa guardados en localStorage');
+  } catch (e) {
+    console.error('Error guardando configuración mapa:', e);
+  }
+}
+
+// Aplicar valores manuales globalmente
+function aplicarValoresManualesMapaGlobal() {
+  console.log('🔧 Aplicando valores manuales de mapa de cobertura...');
+  
+  ['2024', '2025'].forEach(anio => {
+    if (data[anio]) {
+      data[anio] = data[anio].map(programa => {
+        const key = `${programa.institucion}_${programa.codigo}`;
+        
+        // Aplicar datos de municipios si existen
+        if (valoresManualesMapa[anio] && valoresManualesMapa[anio][key]) {
+          programa.data = JSON.parse(JSON.stringify(valoresManualesMapa[anio][key]));
+          
+          // Calcular suma de municipios
+          const sumaMunicipios = Object.values(programa.data).reduce((a, b) => a + b, 0);
+          
+          // Aplicar total único manual si existe, si no, usar suma de municipios
+          if (valoresManualesMapa[anio][key + '_TOTAL'] !== undefined) {
+            programa.total = valoresManualesMapa[anio][key + '_TOTAL'];
+          } else {
+            programa.total = sumaMunicipios;
+          }
+          
+          // Aplicar sin identificar manual si existe
+          if (valoresManualesMapa[anio][key + '_SIN_IDENTIFICAR'] !== undefined) {
+            programa.sinIdentificar = valoresManualesMapa[anio][key + '_SIN_IDENTIFICAR'];
+          } else {
+            // Calcular automáticamente
+            programa.sinIdentificar = programa.total - sumaMunicipios;
+          }
+        }
+        
+        return programa;
+      });
+    }
+  });
+  
+  console.log('✅ Valores manuales de mapa aplicados correctamente');
+}
+
+// Mostrar modal de configuración
+function mostrarConfiguracionMapa() {
+  const modal = document.createElement('div');
+  modal.id = 'configModalMapa';
+  modal.style.cssText = `
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.85); z-index: 10000;
+    display: flex; justify-content: center; align-items: center; padding: 20px;
+    overflow-y: auto;
+  `;
+  
+  modal.innerHTML = `
+    <div style="background: white; border-radius: 20px; padding: 30px; max-width: 1600px; width: 100%; max-height: 95vh; overflow-y: auto; box-shadow: 0 25px 80px rgba(0,0,0,0.6);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 3px solid #0066cc; padding-bottom: 15px;">
+        <h2 style="font-size: 26px; font-weight: 900; color: #003f7f; margin: 0;">⚙️ Configuración Manual - Cobertura Territorial</h2>
+        <button onclick="cerrarConfigMapa()" style="background: #dc3545; color: white; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 14px;">✕ Cerrar</button>
+      </div>
+      
+      <div style="background: #e3f2fd; padding: 15px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid #0066cc;">
+        <p style="margin: 0; color: #003f7f; font-size: 14px; line-height: 1.6;">
+          <strong>💡 Instrucciones:</strong> Edita beneficiarios por municipio, agrega o quita municipios de cada programa. Los cambios se guardan al aplicar.
+        </p>
+      </div>
+      
+      <!-- SELECTORES -->
+      <div style="display: grid; grid-template-columns: 1fr 3fr; gap: 15px; margin-bottom: 20px; background: #f8f9fa; padding: 20px; border-radius: 12px;">
+        <div>
+          <label style="display: block; font-weight: 700; color: #495057; margin-bottom: 8px; font-size: 13px;">📅 AÑO:</label>
+          <select id="anioConfigMapa" onchange="actualizarProgramasDisponiblesMapa()" style="width: 100%; padding: 10px; border: 2px solid #dee2e6; border-radius: 8px; font-weight: 700; font-size: 14px;">
+            <option value="2024">2024</option>
+            <option value="2025" selected>2025</option>
+          </select>
+        </div>
+        <div>
+          <label style="display: block; font-weight: 700; color: #495057; margin-bottom: 8px; font-size: 13px;">📋 PROGRAMA:</label>
+          <select id="programaConfigMapa" onchange="actualizarFormularioMapa()" style="width: 100%; padding: 10px; border: 2px solid #dee2e6; border-radius: 8px; font-weight: 700; font-size: 14px;">
+            <option value="">Seleccionar...</option>
+          </select>
+        </div>
+      </div>
+      
+      <!-- FORMULARIO -->
+      <div id="formularioMapa" style="background: white; padding: 25px; border-radius: 12px; border: 2px solid #e0e0e0; max-height: 50vh; overflow-y: auto;">
+        <p style="color: #999; text-align: center; padding: 40px;">Selecciona año y programa</p>
+      </div>
+      
+      <div style="margin-top: 20px; border-top: 2px solid #dee2e6; padding-top: 20px; display: flex; justify-content: space-between; align-items: center;">
+        <button onclick="resetearTodoMapa()" style="background: #dc3545; color: white; border: none; padding: 12px 25px; border-radius: 10px; font-weight: 700; cursor: pointer;">
+          🗑️ Resetear TODO
+        </button>
+        <div>
+          <button onclick="limpiarProgramaActualMapa()" style="background: #ffc107; color: #333; border: none; padding: 12px 30px; border-radius: 10px; font-weight: 700; cursor: pointer; margin-right: 10px;">
+            🔄 Restaurar Automáticos
+          </button>
+          <button onclick="aplicarCambiosMapa()" style="background: #28a745; color: white; border: none; padding: 12px 30px; border-radius: 10px; font-weight: 700; cursor: pointer; margin-right: 10px;">
+            ✅ Aplicar Cambios
+          </button>
+          <button onclick="cerrarConfigMapa()" style="background: #6c757d; color: white; border: none; padding: 12px 30px; border-radius: 10px; font-weight: 700; cursor: pointer;">
+            ❌ Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(modal);
+  actualizarProgramasDisponiblesMapa();
+}
+
+// Actualizar lista de programas disponibles
+function actualizarProgramasDisponiblesMapa() {
+  const anio = document.getElementById('anioConfigMapa').value;
+  const select = document.getElementById('programaConfigMapa');
+  
+  if (!data[anio]) {
+    select.innerHTML = '<option value="">Sin programas</option>';
+    return;
+  }
+  
+  const programas = data[anio];
+  select.innerHTML = '<option value="">Seleccionar...</option>' +
+    programas.map((p, idx) => 
+      `<option value="${idx}">${p.codigo} - ${p.nombre} (${p.institucion})</option>`
+    ).join('');
+  
+  document.getElementById('formularioMapa').innerHTML = '<p style="color: #999; text-align: center; padding: 40px;">Selecciona programa</p>';
+}
+
+// Actualizar beneficiarios de un municipio
+function actualizarBeneficiariosMunicipio(anio, key, municipio, valor) {
+  valoresManualesMapa[anio][key][municipio] = parseInt(valor) || 0;
+  guardarValoresMapa();
+  actualizarTotalMapa(anio, key);
+}
+
+// Actualizar total de beneficiarios únicos
+function actualizarTotalUnico(anio, key, valor) {
+  const numValor = parseInt(valor);
+  if (valor === '' || isNaN(numValor)) {
+    // Si está vacío, eliminar para usar automático
+    delete valoresManualesMapa[anio][key + '_TOTAL'];
+  } else {
+    valoresManualesMapa[anio][key + '_TOTAL'] = numValor;
+  }
+  guardarValoresMapa();
+  console.log(`Total único actualizado para ${key}: ${valor || 'AUTOMÁTICO'}`);
+}
+
+// Actualizar beneficiarios sin identificar
+function actualizarSinIdentificar(anio, key, valor) {
+  const numValor = parseInt(valor);
+  if (valor === '' || isNaN(numValor)) {
+    // Si está vacío, eliminar para usar automático
+    delete valoresManualesMapa[anio][key + '_SIN_IDENTIFICAR'];
+  } else {
+    valoresManualesMapa[anio][key + '_SIN_IDENTIFICAR'] = numValor;
+  }
+  guardarValoresMapa();
+  console.log(`Sin identificar actualizado para ${key}: ${valor || 'AUTOMÁTICO'}`);
+}
+
+// Actualizar formulario de municipios
+function actualizarFormularioMapa() {
+  const anio = document.getElementById('anioConfigMapa').value;
+  const idx = parseInt(document.getElementById('programaConfigMapa').value);
+  const form = document.getElementById('formularioMapa');
+  
+  if (isNaN(idx)) {
+    form.innerHTML = '<p style="color: #999; text-align: center; padding: 40px;">Selecciona programa</p>';
+    return;
+  }
+  
+  const programa = data[anio][idx];
+  const key = `${programa.institucion}_${programa.codigo}`;
+  
+  // Inicializar estructura si no existe
+  if (!valoresManualesMapa[anio][key]) {
+    valoresManualesMapa[anio][key] = JSON.parse(JSON.stringify(programa.data || {}));
+  }
+  
+  const municipios = valoresManualesMapa[anio][key];
+  const municipiosActuales = Object.keys(municipios).sort();
+  
+  // Obtener valores manuales de totales si existen
+  const totalManual = valoresManualesMapa[anio][key + '_TOTAL'] || '';
+  const sinIdentificarManual = valoresManualesMapa[anio][key + '_SIN_IDENTIFICAR'] || '';
+  
+  form.innerHTML = `
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #dee2e6;">
+      <div>
+        <h3 style="margin: 0 0 5px 0; color: #003f7f; font-size: 18px;">${programa.nombre}</h3>
+        <p style="margin: 0; color: #666; font-size: 13px;">${programa.codigo} | ${programa.institucion} | ${municipiosActuales.length} municipios</p>
+      </div>
+      <button 
+        data-anio="${anio}" 
+        data-key="${key}"
+        onclick="agregarMunicipioMapa(this.dataset.anio, this.dataset.key)" 
+        style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 700; cursor: pointer;">
+        ➕ Agregar Municipio
+      </button>
+    </div>
+    
+    <!-- CAMPOS DE TOTALES GLOBALES -->
+    <div style="background: #fff3cd; border: 2px solid #ffc107; border-radius: 10px; padding: 20px; margin-bottom: 20px;">
+      <h4 style="margin: 0 0 15px 0; color: #856404; font-size: 16px; font-weight: 700;">📊 Totales del Programa</h4>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+        <div>
+          <label style="display: block; font-weight: 600; color: #495057; margin-bottom: 5px; font-size: 13px;">
+            👥 Total de Beneficiarios Únicos:
+          </label>
+          <input type="number" 
+            id="totalUnicoInput_${anio}_${key.replace(/[^a-zA-Z0-9]/g, '')}"
+            value="${totalManual}" 
+            placeholder="Automático"
+            min="0"
+            style="width: 100%; padding: 10px; border: 2px solid #dee2e6; border-radius: 8px; font-size: 14px; font-weight: 600;"
+            onchange="actualizarTotalUnico('${anio}', '${key}', this.value)">
+          <small style="color: #6c757d; font-size: 11px;">Dejar vacío para calcular automáticamente</small>
+        </div>
+        <div>
+          <label style="display: block; font-weight: 600; color: #495057; margin-bottom: 5px; font-size: 13px;">
+            ❓ Beneficiarios Sin Identificar:
+          </label>
+          <input type="number" 
+            id="sinIdentificarInput_${anio}_${key.replace(/[^a-zA-Z0-9]/g, '')}"
+            value="${sinIdentificarManual}" 
+            placeholder="Automático"
+            min="0"
+            style="width: 100%; padding: 10px; border: 2px solid #dee2e6; border-radius: 8px; font-size: 14px; font-weight: 600;"
+            onchange="actualizarSinIdentificar('${anio}', '${key}', this.value)">
+          <small style="color: #6c757d; font-size: 11px;">Dejar vacío para calcular automáticamente</small>
+        </div>
+      </div>
+    </div>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px;">
+      ${municipiosActuales.map(mun => `
+        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #dee2e6;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <strong style="color: #495057; font-size: 13px;">🏘️ ${mun}</strong>
+            <button 
+              data-anio="${anio}" 
+              data-key="${key}"
+              data-municipio="${mun}"
+              onclick="eliminarMunicipioMapa(this.dataset.anio, this.dataset.key, this.dataset.municipio)" 
+              style="background: #dc3545; color: white; border: none; padding: 4px 8px; border-radius: 5px; font-weight: 700; cursor: pointer; font-size: 11px;">
+              🗑️
+            </button>
+          </div>
+          <div>
+            <label style="display: block; font-size: 11px; color: #6c757d; margin-bottom: 4px;">👥 Beneficiarios:</label>
+            <input type="number" step="1" 
+              value="${municipios[mun] || 0}" 
+              placeholder="0"
+              data-anio="${anio}"
+              data-key="${key}"
+              data-municipio="${mun}"
+              style="width: 100%; padding: 8px; border: 2px solid #dee2e6; border-radius: 6px; font-size: 14px; font-weight: 600;"
+              onchange="actualizarBeneficiariosMunicipio(this.dataset.anio, this.dataset.key, this.dataset.municipio, this.value);">
+          </div>
+        </div>
+      `).join('')}
+    </div>
+    
+    ${municipiosActuales.length === 0 ? `
+      <div style="text-align: center; padding: 40px; background: #f8f9fa; border-radius: 10px; border: 2px dashed #dee2e6;">
+        <p style="color: #999; margin: 0; font-size: 14px;">Sin municipios registrados. Haz clic en "➕ Agregar Municipio" para comenzar.</p>
+      </div>
+    ` : ''}
+    
+    <div id="totalBeneficiarios${anio}${key.replace(/[^a-zA-Z0-9]/g, '')}" style="margin-top: 20px; padding: 15px; background: #d1ecf1; border-left: 4px solid #17a2b8; border-radius: 8px;">
+      ${(() => {
+        const sumaMunicipios = Object.values(municipios).reduce((a, b) => a + b, 0);
+        const totalUnico = valoresManualesMapa[anio][key + '_TOTAL'];
+        const totalDisplay = totalUnico !== undefined ? totalUnico : sumaMunicipios;
+        const totalEsManual = totalUnico !== undefined;
+        const sinIdentificarManual = valoresManualesMapa[anio][key + '_SIN_IDENTIFICAR'];
+        const sinIdentificarDisplay = sinIdentificarManual !== undefined ? sinIdentificarManual : (totalDisplay - sumaMunicipios);
+        const sinIdentEsManual = sinIdentificarManual !== undefined;
+        
+        return `
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div>
+              <p style="margin: 0 0 5px 0; color: #0c5460; font-size: 12px; font-weight: 600;">
+                📊 Total de Beneficiarios Únicos:
+              </p>
+              <p style="margin: 0; color: #0c5460; font-size: 18px; font-weight: 700;">
+                ${totalDisplay.toLocaleString('es-MX')}
+                ${totalEsManual ? '<span style="font-size: 11px; color: #17a2b8; font-weight: 600;"> (Manual)</span>' : '<span style="font-size: 11px; color: #6c757d; font-weight: 600;"> (Auto)</span>'}
+              </p>
+            </div>
+            <div>
+              <p style="margin: 0 0 5px 0; color: #0c5460; font-size: 12px; font-weight: 600;">
+                ❓ Sin Identificar:
+              </p>
+              <p style="margin: 0; color: #0c5460; font-size: 18px; font-weight: 700;">
+                ${sinIdentificarDisplay.toLocaleString('es-MX')}
+                ${sinIdentEsManual ? '<span style="font-size: 11px; color: #17a2b8; font-weight: 600;"> (Manual)</span>' : '<span style="font-size: 11px; color: #6c757d; font-weight: 600;"> (Auto)</span>'}
+              </p>
+            </div>
+          </div>
+          <p style="margin: 15px 0 0 0; padding-top: 15px; border-top: 1px solid #17a2b8; color: #0c5460; font-size: 13px;">
+            💡 Suma de municipios: <strong>${sumaMunicipios.toLocaleString('es-MX')}</strong>
+          </p>
+        `;
+      })()}
+    </div>
+  `;
+}
+
+// Actualizar total de beneficiarios
+function actualizarTotalMapa(anio, key) {
+  const municipios = valoresManualesMapa[anio][key];
+  const sumaMunicipios = Object.values(municipios).reduce((a, b) => a + b, 0);
+  
+  // Obtener total único (manual o automático)
+  const totalUnico = valoresManualesMapa[anio][key + '_TOTAL'];
+  const totalDisplay = totalUnico !== undefined ? totalUnico : sumaMunicipios;
+  const totalEsManual = totalUnico !== undefined;
+  
+  // Obtener sin identificar (manual o automático)
+  const sinIdentificarManual = valoresManualesMapa[anio][key + '_SIN_IDENTIFICAR'];
+  const sinIdentificarDisplay = sinIdentificarManual !== undefined ? sinIdentificarManual : (totalDisplay - sumaMunicipios);
+  const sinIdentEsManual = sinIdentificarManual !== undefined;
+  
+  const elemento = document.getElementById(`totalBeneficiarios${anio}${key.replace(/[^a-zA-Z0-9]/g, '')}`);
+  if (elemento) {
+    elemento.innerHTML = `
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+        <div>
+          <p style="margin: 0 0 5px 0; color: #0c5460; font-size: 12px; font-weight: 600;">
+            📊 Total de Beneficiarios Únicos:
+          </p>
+          <p style="margin: 0; color: #0c5460; font-size: 18px; font-weight: 700;">
+            ${totalDisplay.toLocaleString('es-MX')}
+            ${totalEsManual ? '<span style="font-size: 11px; color: #17a2b8; font-weight: 600;"> (Manual)</span>' : '<span style="font-size: 11px; color: #6c757d; font-weight: 600;"> (Auto)</span>'}
+          </p>
+        </div>
+        <div>
+          <p style="margin: 0 0 5px 0; color: #0c5460; font-size: 12px; font-weight: 600;">
+            ❓ Sin Identificar:
+          </p>
+          <p style="margin: 0; color: #0c5460; font-size: 18px; font-weight: 700;">
+            ${sinIdentificarDisplay.toLocaleString('es-MX')}
+            ${sinIdentEsManual ? '<span style="font-size: 11px; color: #17a2b8; font-weight: 600;"> (Manual)</span>' : '<span style="font-size: 11px; color: #6c757d; font-weight: 600;"> (Auto)</span>'}
+          </p>
+        </div>
+      </div>
+      <p style="margin: 15px 0 0 0; padding-top: 15px; border-top: 1px solid #17a2b8; color: #0c5460; font-size: 13px;">
+        💡 Suma de municipios: <strong>${sumaMunicipios.toLocaleString('es-MX')}</strong>
+      </p>
+    `;
+  }
+}
+
+// Agregar municipio
+function agregarMunicipioMapa(anio, key) {
+  const municipiosActuales = Object.keys(valoresManualesMapa[anio][key]);
+  const municipiosDisponibles = MUNICIPIOS_CHIHUAHUA.filter(m => !municipiosActuales.includes(m));
+  
+  if (municipiosDisponibles.length === 0) {
+    alert('⚠️ Ya están todos los municipios de Chihuahua agregados');
+    return;
+  }
+  
+  // Crear modal de selección
+  const modalSelect = document.createElement('div');
+  modalSelect.id = 'modalAgregarMunicipio';
+  modalSelect.style.cssText = `
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.9); z-index: 10001;
+    display: flex; justify-content: center; align-items: center;
+  `;
+  
+  modalSelect.innerHTML = `
+    <div style="background: white; border-radius: 15px; padding: 30px; max-width: 500px; width: 90%;">
+      <h3 style="margin: 0 0 20px 0; color: #003f7f;">➕ Agregar Municipio</h3>
+      <select id="municipioNuevoSelect" style="width: 100%; padding: 12px; border: 2px solid #dee2e6; border-radius: 8px; font-size: 14px; margin-bottom: 15px;">
+        <option value="">Seleccionar municipio...</option>
+        ${municipiosDisponibles.map(m => `<option value="${m}">${m}</option>`).join('')}
+      </select>
+      <div>
+        <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #495057;">Beneficiarios iniciales:</label>
+        <input type="number" id="beneficiariosInicialesMapa" value="0" min="0" step="1" 
+          style="width: 100%; padding: 12px; border: 2px solid #dee2e6; border-radius: 8px; font-size: 14px; margin-bottom: 20px;">
+      </div>
+      <div style="display: flex; gap: 10px; justify-content: flex-end;">
+        <button onclick="cerrarModalAgregarMunicipio()" 
+          style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 700; cursor: pointer;">
+          Cancelar
+        </button>
+        <button 
+          data-anio="${anio}" 
+          data-key="${key}"
+          onclick="confirmarAgregarMunicipioMapa(this.dataset.anio, this.dataset.key)" 
+          style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 700; cursor: pointer;">
+          ✅ Agregar
+        </button>
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(modalSelect);
+}
+
+// Cerrar modal de agregar municipio
+function cerrarModalAgregarMunicipio() {
+  const modal = document.getElementById('modalAgregarMunicipio');
+  if (modal) {
+    modal.remove();
+  }
+}
+
+// Confirmar agregar municipio
+function confirmarAgregarMunicipioMapa(anio, key) {
+  const selectElement = document.getElementById('municipioNuevoSelect');
+  const inputElement = document.getElementById('beneficiariosInicialesMapa');
+  
+  if (!selectElement || !inputElement) {
+    alert('⚠️ Error: elementos no encontrados');
+    return;
+  }
+  
+  const municipio = selectElement.value;
+  const beneficiarios = parseInt(inputElement.value) || 0;
+  
+  if (!municipio) {
+    alert('⚠️ Selecciona un municipio');
+    return;
+  }
+  
+  // Agregar municipio a los datos
+  valoresManualesMapa[anio][key][municipio] = beneficiarios;
+  guardarValoresMapa();
+  
+  // Cerrar modal de selección
+  cerrarModalAgregarMunicipio();
+  
+  // Actualizar formulario
+  actualizarFormularioMapa();
+}
+
+// Eliminar municipio
+function eliminarMunicipioMapa(anio, key, municipio) {
+  if (confirm(`¿Eliminar "${municipio}" de este programa?`)) {
+    delete valoresManualesMapa[anio][key][municipio];
+    guardarValoresMapa();
+    actualizarFormularioMapa();
+    alert(`✅ Municipio "${municipio}" eliminado`);
+  }
+}
+
+// Limpiar programa actual
+function limpiarProgramaActualMapa() {
+  const anio = document.getElementById('anioConfigMapa').value;
+  const idx = parseInt(document.getElementById('programaConfigMapa').value);
+  
+  if (isNaN(idx)) {
+    alert('⚠️ Selecciona un programa primero');
+    return;
+  }
+  
+  const programa = data[anio][idx];
+  const key = `${programa.institucion}_${programa.codigo}`;
+  
+  if (confirm(`¿Restaurar valores automáticos para "${programa.nombre}"?\n\nEsto eliminará todos los cambios manuales de este programa, incluyendo totales personalizados.`)) {
+    // Eliminar datos de municipios
+    delete valoresManualesMapa[anio][key];
+    // Eliminar total único personalizado
+    delete valoresManualesMapa[anio][key + '_TOTAL'];
+    // Eliminar sin identificar personalizado
+    delete valoresManualesMapa[anio][key + '_SIN_IDENTIFICAR'];
+    
+    guardarValoresMapa();
+    aplicarValoresManualesMapaGlobal();
+    
+    // Actualizar formulario inmediatamente
+    actualizarFormularioMapa();
+    
+    alert('✅ Valores automáticos restaurados para este programa');
+  }
+}
+
+// Resetear TODO
+function resetearTodoMapa() {
+  if (confirm('⚠️ ¿Estás seguro de resetear TODOS los valores manuales del Mapa de Cobertura?\n\nEsta acción NO se puede deshacer.')) {
+    if (confirm('🔴 ÚLTIMA CONFIRMACIÓN:\n¿Resetear TODO y volver a valores automáticos?')) {
+      localStorage.removeItem('valoresManualesMapa');
+      valoresManualesMapa = { '2024': {}, '2025': {} };
+      
+      // Re-cargar datos originales
+      cargarValoresManualesMapa();
+      aplicarValoresManualesMapaGlobal();
+      
+      // Re-renderizar
+      if (typeof render === 'function') {
+        render(true);
+      }
+      if (typeof fillInstitutions === 'function') {
+        fillInstitutions(false);
+      }
+      if (typeof fillPrograms === 'function') {
+        fillPrograms();
+      }
+      
+      alert('✅ TODO reseteado. Valores automáticos restaurados.');
+    }
+  }
+}
+
+// Aplicar cambios y actualizar mapa
+function aplicarCambiosMapa() {
+  guardarValoresMapa();
+  aplicarValoresManualesMapaGlobal();
+  cerrarConfigMapa();
+  
+  // Re-renderizar el mapa con los nuevos valores
+  if (typeof render === 'function') {
+    render(true);
+  }
+  if (typeof fillInstitutions === 'function') {
+    fillInstitutions(false);
+  }
+  if (typeof fillPrograms === 'function') {
+    fillPrograms();
+  }
+  
+  alert('✅ Cambios aplicados correctamente');
+}
+
+// Cerrar modal
+function cerrarConfigMapa() {
+  const modal = document.getElementById('configModalMapa');
+  if (modal) modal.remove();
+}
+
+// Atajos de teclado
+console.log('🔑 Registrando atajos de teclado para Mapa de Cobertura...');
+document.addEventListener('keydown', function(e) {
+  if (e.ctrlKey && e.shiftKey && e.key === 'E') {
+    e.preventDefault();
+    console.log('✅ Ctrl+Shift+E detectado, abriendo configuración de mapa...');
+    mostrarConfiguracionMapa();
+  }
+  if (e.ctrlKey && e.altKey && e.key === 'c') {
+    e.preventDefault();
+    console.log('✅ Ctrl+Alt+C detectado, abriendo configuración de mapa...');
+    mostrarConfiguracionMapa();
+  }
+});
+
+// Código secreto "config"
+let secretCodeMapa = [];
+let secretTimerMapa = null;
+document.addEventListener('keypress', function(e) {
+  secretCodeMapa.push(e.key.toLowerCase());
+  clearTimeout(secretTimerMapa);
+  secretTimerMapa = setTimeout(() => secretCodeMapa = [], 2000);
+  if (secretCodeMapa.join('') === 'config') {
+    mostrarConfiguracionMapa();
+    secretCodeMapa = [];
+  }
+});
+
+// Triple clic en título
+document.addEventListener('DOMContentLoaded', function() {
+  setTimeout(() => {
+    const title = document.querySelector('h1, .page-title, .section-title');
+    if (title) {
+      let clickCount = 0;
+      let clickTimer = null;
+      title.addEventListener('click', () => {
+        clickCount++;
+        if (clickCount === 3) {
+          mostrarConfiguracionMapa();
+          clickCount = 0;
+        }
+        clearTimeout(clickTimer);
+        clickTimer = setTimeout(() => clickCount = 0, 500);
+      });
+      title.style.cursor = 'pointer';
+    }
+  }, 1000);
+});
+
+// Inicializar valores manuales
+console.log('📂 Cargando valores de mapa desde localStorage...');
+cargarValoresManualesMapa();
+console.log('🚀 Aplicando valores manuales al data...');
+aplicarValoresManualesMapaGlobal();
+
+// Verificar que la función está definida
+if (typeof mostrarConfiguracionMapa === 'function') {
+  console.log('✅ Función mostrarConfiguracionMapa está definida correctamente');
+} else {
+  console.error('❌ ERROR: Función mostrarConfiguracionMapa NO está definida');
+}
+// Inicialización - esperar a que el DOM y Leaflet estén listos
+window.addEventListener('load', function() {
+  fillInstitutions();
+  fillPrograms();
+  render();
+});
+  </script>
+</body>
+</html>
