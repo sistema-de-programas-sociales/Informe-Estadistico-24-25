@@ -6630,6 +6630,7 @@
         instituciones: null,
         programas: null,
         municipios: null,
+        personasVulnerables,
         // Calculados
         eficiencia: null,
         subejercicio: null,
@@ -6661,6 +6662,7 @@
         instituciones: null,
         programas: null,
         municipios: null,
+        personasVulnerables,
         // Calculados
         eficiencia: null,
         subejercicio: null,
@@ -6768,7 +6770,8 @@
             ${generarCamposAnios([
               { key: 'tasaDuplicacion', label: '🔁 TASA DUPLICACIÓN' },
               { key: 'coberturaReal', label: '🎯 COBERTURA REAL (%)' },
-              { key: 'coberturaDuplicacion', label: '👥 COBERTURA CON DUPLICACIÓN (%)' }
+              { key: 'coberturaDuplicacion', label: '👥 COBERTURA CON DUPLICACIÓN (%)' },
+              { key: 'personasVulnerables', label: '🌍 UNIVERSO DE ATENCIÓN' }
             ])}
           </div>
           
@@ -6875,7 +6878,7 @@
       // Limpiar TODOS los campos
       const todosCampos = ['beneficiariosTotales', 'beneficiariosUnicos', 'presupuestoModificado', 'gastoEjercido',
                           'hombres', 'mujeres', 'instituciones', 'programas', 'municipios',
-                          'eficiencia', 'subejercicio', 'tasaDuplicacion', 'coberturaReal', 'coberturaDuplicacion',
+                          'eficiencia', 'subejercicio','personasVulnerables', 'tasaDuplicacion', 'coberturaReal', 'coberturaDuplicacion',
                           'gastoPerCapita', 'gastoPerCapitaUnico', 'inversionDiaria', 'inversionMensual', 'inversionHoraria',
                           'costoInstitucion', 'costoPrograma', 'costoMunicipio',
                           'sinIdentificar', 'porcentajeMujeres', 'porcentajeHombres', 'ratioMH', 'porcentajeIdentificados'];
@@ -7029,6 +7032,7 @@ function updateBreadcrumb() {
       const totalInstituciones = obtenerValor(currentYear, 'instituciones', totalInstitucionesAuto);
       const totalProgramas = obtenerValor(currentYear, 'programas', totalProgramasAuto);
       const totalMunicipios = obtenerValor(currentYear, 'municipios', totalMunicipiosAuto);
+      const personasVulnerables = 1792300;
       
       // CALCULAR VALORES DERIVADOS AUTOMÁTICOS
       const eficienciaAuto = (totalGasto / totalPresupuesto * 100);
@@ -7036,6 +7040,7 @@ function updateBreadcrumb() {
       const tasaDuplicacionAuto = totalBeneficiarios / totalUnicos;
       const coberturaRealAuto = (totalUnicos / 1792300 * 100);
       const coberturaDuplicacionAuto = (totalBeneficiarios / 1792300 * 100);
+      const personasVulnerables = 1792300;
       const gastoPerCapitaAuto = totalGasto / totalBeneficiarios;
       const gastoPerCapitaUnicoAuto = totalGasto / totalUnicos;
       const inversionDiariaAuto = totalGasto / 365;
@@ -7056,6 +7061,7 @@ function updateBreadcrumb() {
       const tasaDuplicacion = obtenerValor(currentYear, 'tasaDuplicacion', tasaDuplicacionAuto).toFixed(2);
       const coberturaReal = obtenerValor(currentYear, 'coberturaReal', coberturaRealAuto).toFixed(2);
       const coberturaDuplicacion = obtenerValor(currentYear, 'coberturaDuplicacion', coberturaDuplicacionAuto).toFixed(1);
+      const personasVulnerables = 1792300;
       const gastoPerCapita = obtenerValor(currentYear, 'gastoPerCapita', gastoPerCapitaAuto).toFixed(2);
       const gastoPerCapitaUnico = obtenerValor(currentYear, 'gastoPerCapitaUnico', gastoPerCapitaUnicoAuto).toFixed(2);
       const inversionDiaria = obtenerValor(currentYear, 'inversionDiaria', inversionDiariaAuto / 1000000) * 1000000;
@@ -7183,7 +7189,8 @@ function updateBreadcrumb() {
           nombre: 'COBERTURA POBLACIONAL',
           stats: [
             { icon: '🎯', value: coberturaReal + '%', label: 'Cobertura Real' },
-            { icon: '👥', value: coberturaDuplicacion + '%', label: 'Con Duplicación' }
+            { icon: '👥', value: coberturaDuplicacion + '%', label: 'Con Duplicación' },
+            { icon: '🌍', value: personasVulnerables, label: 'Universo de Atención' }
           ]
         },
         {
