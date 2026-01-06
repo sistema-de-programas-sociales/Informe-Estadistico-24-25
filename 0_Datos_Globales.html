@@ -7157,89 +7157,143 @@
     // VALORES MANUALES OVERRIDE (EXPANDIDO)
     // ============================================
     
+    // ====================================================================
+    // CONFIGURACIÓN DE VALORES MANUALES - EDITAR AQUÍ DIRECTAMENTE
+    // ====================================================================
+    // Para modificar cualquier valor calculado automáticamente:
+    // 1. Cambiar el valor "null" por el número deseado
+    // 2. Para volver al cálculo automático, poner "null" nuevamente
+    // 
+    // Ejemplo: eficiencia: 85.5  (valor manual)
+    //          eficiencia: null  (cálculo automático)
+    // ====================================================================
+
     let valoresManuales = {
       '2024': {
-        // Básicos
-        beneficiariosTotales: null,
-        beneficiariosUnicos: null,
-        presupuestoModificado: null,
-        gastoEjercido: null,
-        hombres: null,
-        mujeres: null,
-        instituciones: null,
-        programas: null,
-        municipios: null,
-        personasVulnerables: null,
-        // Calculados
-        eficiencia: null,
-        subejercicio: null,
-        tasaDuplicacion: null,
-        coberturaReal: null,
-        coberturaDuplicacion: null,
-        gastoPerCapita: null,
-        gastoPerCapitaUnico: null,
-        inversionDiaria: null,
-        inversionMensual: null,
-        inversionHoraria: null,
-        costoInstitucion: null,
-        costoPrograma: null,
-        costoMunicipio: null,
-        sinIdentificar: null,
-        porcentajeMujeres: null,
-        porcentajeHombres: null,
-        ratioMH: null,
-        porcentajeIdentificados: null
+        // ============== DATOS BÁSICOS ==============
+        beneficiariosTotales: null,         // Total de beneficiarios (incluye duplicados)
+        beneficiariosUnicos: 890844,          // Beneficiarios únicos sin duplicación
+        presupuestoModificado: null,        // Presupuesto total modificado en pesos
+        gastoEjercido: null,                // Gasto real ejercido en pesos
+        hombres: 378919,                      // Número de hombres atendidos
+        mujeres: 505435,                      // Número de mujeres atendidas
+        instituciones: null,                // Cantidad de instituciones participantes
+        programas: null,                    // Cantidad de programas sociales
+        municipios: null,                   // Municipios con cobertura
+        personasVulnerables: null,          // Personas en situación de vulnerabilidad
+
+        // ============== INDICADORES FINANCIEROS ==============
+        eficiencia: null,                   // % Eficiencia presupuestal (gasto/presupuesto*100)
+        subejercicio: null,                 // Monto no ejercido (presupuesto - gasto)
+        gastoPerCapita: null,               // Gasto por beneficiario total ($/persona)
+        gastoPerCapitaUnico: null,          // Gasto por beneficiario único ($/persona única)
+        inversionDiaria: null,              // Inversión promedio diaria ($/día)
+        inversionMensual: null,             // Inversión promedio mensual ($/mes)
+        inversionHoraria: null,             // Inversión promedio por hora ($/hora)
+        costoInstitucion: null,             // Costo promedio por institución ($/institución)
+        costoPrograma: null,                // Costo promedio por programa ($/programa)
+        costoMunicipio: null,               // Costo promedio por municipio ($/municipio)
+
+        // ============== INDICADORES DE COBERTURA ==============
+        tasaDuplicacion: null,              // % de duplicación (duplicados/total*100)
+        coberturaReal: null,                // % de cobertura real sobre población objetivo
+        coberturaDuplicacion: null,         // Diferencia entre cobertura total y única (%)
+
+        // ============== INDICADORES DEMOGRÁFICOS ==============
+        sinIdentificar: 6490,               // Beneficiarios sin género identificado
+        porcentajeMujeres: null,            // % de mujeres del total identificado
+        porcentajeHombres: null,            // % de hombres del total identificado
+        ratioMH: null,                      // Ratio mujeres/hombres (veces)
+        porcentajeIdentificados: null       // % de beneficiarios con género identificado
       },
+
       '2025': {
-        // Básicos
-        beneficiariosTotales: null,
-        beneficiariosUnicos: null,
-        presupuestoModificado: null,
-        gastoEjercido: null,
-        hombres: null,
-        mujeres: null,
-        instituciones: null,
-        programas: null,
-        municipios: null,
-        personasVulnerables: null,
-        // Calculados
-        eficiencia: null,
-        subejercicio: null,
-        tasaDuplicacion: null,
-        coberturaReal: null,
-        coberturaDuplicacion: null,
-        gastoPerCapita: null,
-        gastoPerCapitaUnico: null,
-        inversionDiaria: null,
-        inversionMensual: null,
-        inversionHoraria: null,
-        costoInstitucion: null,
-        costoPrograma: null,
-        costoMunicipio: null,
-        sinIdentificar: null,
-        porcentajeMujeres: null,
-        porcentajeHombres: null,
-        ratioMH: null,
-        porcentajeIdentificados: null
+        // ============== DATOS BÁSICOS ==============
+        beneficiariosTotales: null,         // Total de beneficiarios (incluye duplicados)
+        beneficiariosUnicos: 1290597,          // Beneficiarios únicos sin duplicación
+        presupuestoModificado: null,        // Presupuesto total modificado en pesos
+        gastoEjercido: null,                // Gasto real ejercido en pesos
+        hombres: 554489,                      // Número de hombres atendidos
+        mujeres: 729224,                      // Número de mujeres atendidas
+        instituciones: null,                // Cantidad de instituciones participantes
+        programas: null,                    // Cantidad de programas sociales
+        municipios: null,                   // Municipios con cobertura
+        personasVulnerables: null,          // Personas en situación de vulnerabilidad
+
+        // ============== INDICADORES FINANCIEROS ==============
+        eficiencia: null,                   // % Eficiencia presupuestal (gasto/presupuesto*100)
+        subejercicio: null,                 // Monto no ejercido (presupuesto - gasto)
+        gastoPerCapita: null,               // Gasto por beneficiario total ($/persona)
+        gastoPerCapitaUnico: null,          // Gasto por beneficiario único ($/persona única)
+        inversionDiaria: null,              // Inversión promedio diaria ($/día)
+        inversionMensual: null,             // Inversión promedio mensual ($/mes)
+        inversionHoraria: null,             // Inversión promedio por hora ($/hora)
+        costoInstitucion: null,             // Costo promedio por institución ($/institución)
+        costoPrograma: null,                // Costo promedio por programa ($/programa)
+        costoMunicipio: null,               // Costo promedio por municipio ($/municipio)
+
+        // ============== INDICADORES DE COBERTURA ==============
+        tasaDuplicacion: null,              // % de duplicación (duplicados/total*100)
+        coberturaReal: null,                // % de cobertura real sobre población objetivo
+        coberturaDuplicacion: null,         // Diferencia entre cobertura total y única (%)
+
+        // ============== INDICADORES DEMOGRÁFICOS ==============
+        sinIdentificar: 6884,               // Beneficiarios sin género identificado
+        porcentajeMujeres: null,            // % de mujeres del total identificado
+        porcentajeHombres: null,            // % de hombres del total identificado
+        ratioMH: null,                      // Ratio mujeres/hombres (veces)
+        porcentajeIdentificados: null       // % de beneficiarios con género identificado
+      },
+
+      '2026': {
+        // ============== DATOS BÁSICOS ==============
+        beneficiariosTotales: null,         // Total de beneficiarios (incluye duplicados)
+        beneficiariosUnicos: null,          // Beneficiarios únicos sin duplicación
+        presupuestoModificado: null,        // Presupuesto total modificado en pesos
+        gastoEjercido: null,                // Gasto real ejercido en pesos
+        hombres: null,                      // Número de hombres atendidos
+        mujeres: null,                      // Número de mujeres atendidas
+        instituciones: null,                // Cantidad de instituciones participantes
+        programas: null,                    // Cantidad de programas sociales
+        municipios: null,                   // Municipios con cobertura
+        personasVulnerables: null,          // Personas en situación de vulnerabilidad
+
+        // ============== INDICADORES FINANCIEROS ==============
+        eficiencia: null,                   // % Eficiencia presupuestal (gasto/presupuesto*100)
+        subejercicio: null,                 // Monto no ejercido (presupuesto - gasto)
+        gastoPerCapita: null,               // Gasto por beneficiario total ($/persona)
+        gastoPerCapitaUnico: null,          // Gasto por beneficiario único ($/persona única)
+        inversionDiaria: null,              // Inversión promedio diaria ($/día)
+        inversionMensual: null,             // Inversión promedio mensual ($/mes)
+        inversionHoraria: null,             // Inversión promedio por hora ($/hora)
+        costoInstitucion: null,             // Costo promedio por institución ($/institución)
+        costoPrograma: null,                // Costo promedio por programa ($/programa)
+        costoMunicipio: null,               // Costo promedio por municipio ($/municipio)
+
+        // ============== INDICADORES DE COBERTURA ==============
+        tasaDuplicacion: null,              // % de duplicación (duplicados/total*100)
+        coberturaReal: null,                // % de cobertura real sobre población objetivo
+        coberturaDuplicacion: null,         // Diferencia entre cobertura total y única (%)
+
+        // ============== INDICADORES DEMOGRÁFICOS ==============
+        sinIdentificar: null,               // Beneficiarios sin género identificado
+        porcentajeMujeres: null,            // % de mujeres del total identificado
+        porcentajeHombres: null,            // % de hombres del total identificado
+        ratioMH: null,                      // Ratio mujeres/hombres (veces)
+        porcentajeIdentificados: null       // % de beneficiarios con género identificado
       }
     };
+
+    // ====================================================================
+    // FIN DE CONFIGURACIÓN DE VALORES MANUALES
+    // ====================================================================
     
-    // Cargar valores manuales de localStorage si existen
-    function cargarValoresManuales() {
-      const guardados = localStorage.getItem('valoresManualesEstadisticas');
-      if (guardados) {
-        valoresManuales = JSON.parse(guardados);
-      }
-    }
-    
-    // Guardar valores manuales en localStorage
-    function guardarValoresManuales() {
-      localStorage.setItem('valoresManualesEstadisticas', JSON.stringify(valoresManuales));
-    }
+    // NOTA: Los valores ahora se editan directamente en el objeto valoresManuales arriba
+    // Ya no se usa localStorage para persistencia
     
     // Obtener valor (manual si existe, sino calculado automáticamente)
     function obtenerValor(anio, campo, valorAutomatico) {
-      const manual = valoresManuales[anio][campo];
+      const manual = valoresManuales[anio] ? valoresManuales[anio][campo] : null;
       return manual !== null && manual !== '' && manual !== undefined ? parseFloat(manual) : valorAutomatico;
     }
     
@@ -7410,7 +7464,8 @@
     
     function actualizarValorManual(anio, campo, valor) {
       valoresManuales[anio][campo] = valor === '' ? null : valor;
-      guardarValoresManuales();
+      // Los cambios ahora se hacen directamente en el código fuente
+      console.log(`Valor actualizado en memoria: ${anio} - ${campo} = ${valor}`);
     }
     
     function limpiarAnio(anio) {
@@ -7428,27 +7483,32 @@
         if (input) input.value = '';
       });
       
-      guardarValoresManuales();
-      alert(`✅ Valores automáticos restaurados para ${anio}`);
+      // Los cambios ahora se hacen directamente en el código fuente
+      alert(`✅ Valores automáticos restaurados para ${anio} (temporal - editar en código para permanencia)`);
     }
     
     // Resetear TODOS los valores manuales de Datos Globales
     function resetearTodoDatosGlobales() {
       if (confirm('⚠️ ¿Estás seguro de resetear TODOS los valores manuales de Datos Globales?\n\nEsta acción NO se puede deshacer.')) {
         if (confirm('🔴 ÚLTIMA CONFIRMACIÓN:\n¿Resetear TODO y volver a valores automáticos?')) {
-          localStorage.removeItem('manualStatistics');
-          alert('✅ TODO reseteado. Recargando página...');
+          // Resetear todos los años
+          Object.keys(valoresManuales).forEach(anio => {
+            Object.keys(valoresManuales[anio]).forEach(campo => {
+              valoresManuales[anio][campo] = null;
+            });
+          });
+          alert('✅ TODO reseteado. Para hacer permanente, editar el código fuente. Recargando página...');
           location.reload();
         }
       }
     }
 
     function aplicarCambiosYCerrar() {
-      guardarValoresManuales();
+      // Los cambios ahora se hacen directamente en el código fuente
       cerrarConfiguracion();
       // Recargar vista con nuevos valores
       showAllInstituciones();
-      alert('✅ Cambios aplicados correctamente');
+      alert('✅ Cambios aplicados (temporal - editar en código para permanencia)');
     }
     
     function cerrarConfiguracion() {
@@ -8727,8 +8787,8 @@ document.getElementById('yearFilter').addEventListener('change', function(e) {
       }
     });
     
-    // Cargar valores manuales guardados
-    cargarValoresManuales();
+    // Ya no es necesario cargar valores de localStorage
+    // Los valores se editan directamente en el código fuente arriba
     
     showAllInstituciones();
   </script>
