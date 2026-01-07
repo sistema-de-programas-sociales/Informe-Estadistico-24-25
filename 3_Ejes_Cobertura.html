@@ -1170,21 +1170,6 @@
   </div>
 
   <script>
-    // === PRESUPUESTO TOTAL DEFINIDO MANUALMENTE POR AÑO Y EJE ===
-const presupuestoPorEje = {
-  "2024": {
-    "MEDICHIHUAHUA": 4567372127.06,
-    "NUTRICHIHUAHUA": 1015348116.71,
-    "POBREZA": 1762113107.30
-  },
-  "2025": {
-    "MEDICHIHUAHUA": 4719821389.36,
-    "NUTRICHIHUAHUA": 1052488198.36,
-    "POBREZA": 1304955508.03
-  }
-};
-
-
     // === GASTO DEFINIDO MANUALMENTE POR AÑO Y EJE ===
 const gastoPorEje = {
   "2024": {
@@ -1204,12 +1189,42 @@ const beneficiariosPorEje = {
   "2024": {
     "MEDICHIHUAHUA": 450734,
     "NUTRICHIHUAHUA": 299018,
-    "POBREZA": 295714  // Actualizado: sin apoyos de alimentación
+    "POBREZA": 293307  // Actualizado: sin apoyos de alimentación
   },
   "2025": {
     "MEDICHIHUAHUA": 610552,
     "NUTRICHIHUAHUA": 413165,  // Actualizado
     "POBREZA": 170461  // Actualizado: sin apoyos de alimentación
+  }
+};
+
+    // === PRESUPUESTO MODIFICADO POR AÑO Y EJE ===
+    // Este es el presupuesto modificado/ejercido (diferente del original)
+const presupuestoModificadoPorEje = {
+  "2024": {
+    "MEDICHIHUAHUA": 4567372127.06,  // ← EDITAR: Presupuesto modificado 2024
+    "NUTRICHIHUAHUA": 1015348116.71,  // ← EDITAR: Presupuesto modificado 2024
+    "POBREZA": 1546842934.82  // ← EDITAR: Presupuesto modificado 2024
+  },
+  "2025": {
+    "MEDICHIHUAHUA": 4719821389.36,  // ← EDITAR: Presupuesto modificado 2025
+    "NUTRICHIHUAHUA":1052488198.23,  // ← EDITAR: Presupuesto modificado 2025
+    "POBREZA": 998766838.20  // ← EDITAR: Presupuesto modificado 2025
+  }
+};
+
+    // === APOYOS TOTALES POR AÑO Y EJE ===
+    // Total de apoyos/bienes entregados por eje
+const apoyosTotalesPorEje = {
+  "2024": {
+    "MEDICHIHUAHUA": 2538841,  // ← EDITAR: Total de apoyos 2024
+    "NUTRICHIHUAHUA": 3880530,  // ← EDITAR: Total de apoyos 2024
+    "POBREZA": 817403  // ← EDITAR: Total de apoyos 2024
+  },
+  "2025": {
+    "MEDICHIHUAHUA": 1212495,  // ← EDITAR: Total de apoyos 2025
+    "NUTRICHIHUAHUA": 4429223,  // ← EDITAR: Total de apoyos 2025
+    "POBREZA": 33551  // ← EDITAR: Total de apoyos 2025
   }
 };
 
@@ -1619,10 +1634,10 @@ const beneficiariosPorEje = {
           presupuesto: 103580572.32,
           apoyos: [
             {
-              tipo: "Apoyos en especie",
-              cantidad: 67530,
-              beneficiarios: 2407,
-              gastoTotal: 82815347.77
+              tipo: "Apoyos económicos",
+              cantidad: 0,
+              beneficiarios: 0,
+              gastoTotal: 9312599.00
             },
             {
               tipo: "Apoyos económicos a casas de cuidado",
@@ -3875,14 +3890,18 @@ function showEjes() {
             programas: 0,
             presupuesto: 0,
             gasto: 0,
-            beneficiarios: 0 // ===== AGREGAR CONTADOR DE BENEFICIARIOS =====
+            beneficiarios: 0,
+            presupuestoModificado: 0,
+            apoyosTotales: 0
           };
         }
         ejesMap[p.eje].instituciones.add(p.institucion);
         ejesMap[p.eje].programas++;
         ejesMap[p.eje].presupuesto = presupuestoPorEje[currentYear][p.eje] ?? 0;
         ejesMap[p.eje].gasto = gastoPorEje[currentYear][p.eje] ?? 0;
-        ejesMap[p.eje].beneficiarios = beneficiariosPorEje[currentYear][p.eje] ?? 0;// ===== SUMAR BENEFICIARIOS =====
+        ejesMap[p.eje].beneficiarios = beneficiariosPorEje[currentYear][p.eje] ?? 0;
+        ejesMap[p.eje].presupuestoModificado = presupuestoModificadoPorEje[currentYear][p.eje] ?? 0;
+        ejesMap[p.eje].apoyosTotales = apoyosTotalesPorEje[currentYear][p.eje] ?? 0;
       });
 
       const ejesGrid = document.getElementById('ejesGrid');
@@ -3894,7 +3913,7 @@ function showEjes() {
         card.className = 'eje-card color-' + eje.toLowerCase();
         card.style.borderColor = getEjeColor(eje);
         card.onclick = function() { selectEje(eje); };
-            // ===== ESTRUCTURA ACTUALIZADA CON BENEFICIARIOS =====
+            // ===== ESTRUCTURA ACTUALIZADA CON 4 INDICADORES =====
         card.innerHTML = `
           <div class="eje-header">
             <div class="eje-icon-circle">${getEjeIcon(eje)}</div>
@@ -3903,14 +3922,22 @@ function showEjes() {
               <div class="eje-stats">${ejeData.instituciones.size} ${ejeData.instituciones.size === 1 ? 'institución' : 'instituciones'} · ${ejeData.programas} ${ejeData.programas === 1 ? 'programa' : 'programas'}</div>
             </div>
           </div>
-          <div class="eje-footer">
-            <div class="eje-footer-item">
-              <span class="eje-footer-label">👥 Beneficiarios</span>
-              <span class="eje-footer-value">${formatNumber(ejeData.beneficiarios)}</span>
+          <div class="eje-footer" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div class="eje-footer-item" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 12px; border-radius: 8px;">
+              <span class="eje-footer-label" style="color: rgba(255,255,255,0.9); font-size: 11px; display: block; margin-bottom: 4px;">👥 BENEFICIARIOS</span>
+              <span class="eje-footer-value" style="color: white; font-size: 18px; font-weight: 700;">${formatNumber(ejeData.beneficiarios)}</span>
             </div>
-            <div class="eje-footer-item">
-              <span class="eje-footer-label">📊 Gasto</span>
-              <span class="eje-footer-value">${formatCurrency(ejeData.gasto)}</span>
+            <div class="eje-footer-item" style="background: linear-gradient(135deg, #5CDB95 0%, #05C46B 100%); padding: 12px; border-radius: 8px;">
+              <span class="eje-footer-label" style="color: rgba(255,255,255,0.9); font-size: 11px; display: block; margin-bottom: 4px;">💵 GASTO</span>
+              <span class="eje-footer-value" style="color: white; font-size: 18px; font-weight: 700;">${formatCurrency(ejeData.gasto)}</span>
+            </div>
+            <div class="eje-footer-item" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 12px; border-radius: 8px;">
+              <span class="eje-footer-label" style="color: rgba(255,255,255,0.9); font-size: 11px; display: block; margin-bottom: 4px;">💰 PRESUPUESTO</span>
+              <span class="eje-footer-value" style="color: white; font-size: 18px; font-weight: 700;">${formatCurrency(ejeData.presupuestoModificado)}</span>
+            </div>
+            <div class="eje-footer-item" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); padding: 12px; border-radius: 8px;">
+              <span class="eje-footer-label" style="color: rgba(255,255,255,0.9); font-size: 11px; display: block; margin-bottom: 4px;">📦 APOYOS TOTALES</span>
+              <span class="eje-footer-value" style="color: white; font-size: 18px; font-weight: 700;">${formatNumber(ejeData.apoyosTotales)}</span>
             </div>
           </div>
         `;
@@ -4366,7 +4393,9 @@ function actualizarFormularioEje() {
     valoresManualesEjes.ejes[anio][eje] = {
       presupuesto: null,
       gasto: null,
-      beneficiarios: null
+      beneficiarios: null,
+      presupuestoModificado: null,
+      apoyosTotales: null
     };
   }
   
@@ -4374,14 +4403,17 @@ function actualizarFormularioEje() {
   const presupuestoAuto = presupuestoPorEje[anio][eje] || 0;
   const gastoAuto = gastoPorEje[anio][eje] || 0;
   const beneficiariosAuto = beneficiariosPorEje[anio][eje] || 0;
+  const presupuestoModAuto = presupuestoModificadoPorEje[anio][eje] || 0;
+  const apoyosTotalesAuto = apoyosTotalesPorEje[anio][eje] || 0;
   
   form.innerHTML = `
     <h3 style="margin: 0 0 20px 0; color: #003f7f;">Valores Agregados del Eje ${eje} - ${anio}</h3>
-    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
       ${[
-        { campo: 'presupuesto', label: '💰 Presupuesto Total (MDP)', auto: presupuestoAuto },
+        { campo: 'beneficiarios', label: '👥 Beneficiarios Totales', auto: beneficiariosAuto },
         { campo: 'gasto', label: '💸 Gasto Total (MDP)', auto: gastoAuto },
-        { campo: 'beneficiarios', label: '👥 Beneficiarios Totales', auto: beneficiariosAuto }
+        { campo: 'presupuestoModificado', label: '💰 Presupuesto Modificado (MDP)', auto: presupuestoModAuto },
+        { campo: 'apoyosTotales', label: '📦 Apoyos Totales', auto: apoyosTotalesAuto }
       ].map(c => `
         <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; border: 1px solid #dee2e6;">
           <label style="display: block; font-weight: 700; color: #495057; margin-bottom: 10px; font-size: 14px;">${c.label}</label>
@@ -4394,10 +4426,16 @@ function actualizarFormularioEje() {
         </div>
       `).join('')}
     </div>
-    <div style="margin-top: 20px; padding: 15px; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 8px;">
-      <p style="margin: 0; color: #856404; font-size: 13px;">
-        <strong>⚠️ Nota:</strong> Estos valores se muestran en la tarjeta del eje. Los cálculos de eficiencia y porcentajes se actualizan automáticamente.
+    <div style="margin-top: 20px; padding: 15px; background: #e3f2fd; border-left: 4px solid #0066cc; border-radius: 8px;">
+      <p style="margin: 0 0 10px 0; color: #003f7f; font-size: 13px; font-weight: 700;">
+        ℹ️ Información sobre los campos:
       </p>
+      <ul style="margin: 0; padding-left: 20px; color: #495057; font-size: 12px; line-height: 1.8;">
+        <li><strong>Beneficiarios:</strong> Total de personas atendidas en el eje</li>
+        <li><strong>Gasto:</strong> Monto total ejercido/gastado</li>
+        <li><strong>Presupuesto Modificado:</strong> Presupuesto autorizado final (puede diferir del original)</li>
+        <li><strong>Apoyos Totales:</strong> Cantidad total de apoyos/bienes entregados</li>
+      </ul>
     </div>
   `;
 }
@@ -4700,6 +4738,12 @@ function aplicarValoresManualesEjesGlobal() {
         }
         if (valores.beneficiarios !== null && valores.beneficiarios !== undefined && valores.beneficiarios !== '') {
           beneficiariosPorEje[anio][eje] = parseFloat(valores.beneficiarios);
+        }
+        if (valores.presupuestoModificado !== null && valores.presupuestoModificado !== undefined && valores.presupuestoModificado !== '') {
+          presupuestoModificadoPorEje[anio][eje] = parseFloat(valores.presupuestoModificado);
+        }
+        if (valores.apoyosTotales !== null && valores.apoyosTotales !== undefined && valores.apoyosTotales !== '') {
+          apoyosTotalesPorEje[anio][eje] = parseFloat(valores.apoyosTotales);
         }
       }
     });
