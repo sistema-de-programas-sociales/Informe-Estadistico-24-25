@@ -1128,28 +1128,28 @@
           <strong style="font-size: 16px; color: #856404;">Nota Aclaratoria</strong>
         </div>
         <p style="margin: 0 0 15px 0; color: #856404; line-height: 1.6; font-size: 14px;">
-          Aunque el eje <strong>POBREZA</strong> tradicionalmente incluye componentes de alimentación, 
-          estos han sido segmentados en un universo independiente denominado <strong>NUTRICHIHUAHUA</strong> 
-          para evitar duplicidad y mejorar la claridad del análisis.
+          Aunque el eje de <strong>combate a la pobreza</strong> tradicionalmente incluye componentes de alimentación, 
+          estos han sido segmentados en <strong>Nutrichihuahua</strong> 
+          para evitar duplicidad y mejorar la claridad del análisis. Los datos totales de pobreza multidimensional son los siguientes:
         </p>
         <div style="background: #fff; padding: 15px; border-radius: 8px; border: 2px solid #ffc107;">
           <div style="font-weight: 700; color: #856404; margin-bottom: 10px; font-size: 15px;">
-            📈 Total Integrado para Fines Estadísticos:
+            📈 Pobreza Multidimensional:
           </div>
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
             <div style="text-align: center; padding: 10px; background: #f8f9fa; border-radius: 6px;">
               <div style="font-size: 12px; color: #666; margin-bottom: 4px;">2024</div>
               <div style="font-size: 20px; font-weight: 700; color: #667eea;">594,732</div>
-              <div style="font-size: 11px; color: #666; margin-top: 2px;">beneficiarios</div>
+              <div style="font-size: 11px; color: #666; margin-top: 2px;">beneficiarios únicos</div>
             </div>
             <div style="text-align: center; padding: 10px; background: #f8f9fa; border-radius: 6px;">
               <div style="font-size: 12px; color: #666; margin-bottom: 4px;">2025</div>
-              <div style="font-size: 20px; font-weight: 700; color: #667eea;">583,626</div>
-              <div style="font-size: 11px; color: #666; margin-top: 2px;">beneficiarios</div>
+              <div style="font-size: 20px; font-weight: 700; color: #667eea;">581,741</div>
+              <div style="font-size: 11px; color: #666; margin-top: 2px;">beneficiarios únicos</div>
             </div>
           </div>
           <div style="font-size: 12px; color: #666; text-align: center; margin-top: 10px; font-style: italic;">
-            POBREZA + NUTRICHIHUAHUA
+            Combate a la pobreza + Inseguridad alimentaria
           </div>
         </div>
       </div>
@@ -1167,14 +1167,13 @@
           <strong style="font-size: 16px; color: #0d47a1;">Nota sobre Contabilización de Beneficiarios</strong>
         </div>
         <p style="margin: 0; color: #0d47a1; line-height: 1.6; font-size: 14px;">
-          El total de beneficiarios mostrado en los ejes <strong>NUTRICHIHUAHUA</strong>, <strong>MEDICHIHUAHUA</strong> 
-          y <strong>POBREZA</strong> puede ser <strong>menor</strong> al total general declarado, ya que en estos ejes 
+          El total de beneficiarios mostrado en los ejes puede ser <strong>menor</strong> al total general declarado, ya que en estos ejes 
           <strong>no se contempla la suma de beneficiarios</strong> de las instituciones <strong>ICHD</strong> (Instituto 
-          Chihuahuense del Deporte) y <strong>Cultura</strong> (Secretaría de Cultura).
+          Chihuahuense del Deporte), <strong>ST</strong>  (Secretaría de Turismo), y <strong>Cultura</strong> (Secretaría de Cultura).
         </p>
         <div style="background: #fff; padding: 12px 15px; border-radius: 8px; border: 2px solid #2196F3; margin-top: 12px;">
           <p style="margin: 0; color: #1565c0; font-size: 13px; font-weight: 600;">
-            💡 Las instituciones Ichd y Cultura mantienen registros independientes que no pertenecen directamente al combate de un eje pero que se suman al total general del sistema.
+            💡 Las instituciones ST, Ichd y Cultura mantienen registros independientes que no pertenecen directamente al combate de un eje pero que se suman al total general del sistema.
           </p>
         </div>
       </div>
@@ -1218,9 +1217,9 @@ const gastoPorEje = {
     "POBREZA": 1456555640.73
   },
   "2025": {
-    "MEDICHIHUAHUA": 2019715710.60,
-    "NUTRICHIHUAHUA": 632107932.66,
-    "POBREZA": 727231174
+    "MEDICHIHUAHUA": 4567372127,
+    "NUTRICHIHUAHUA": 1041659493.17,
+    "POBREZA": 1887553224.39
   }
 };
 
@@ -1232,9 +1231,9 @@ const beneficiariosPorEje = {
     "POBREZA": 295714  // Actualizado: sin apoyos de alimentación
   },
   "2025": {
-    "MEDICHIHUAHUA": 610552,
-    "NUTRICHIHUAHUA": 413165,  // Actualizado
-    "POBREZA": 170461  // Actualizado: sin apoyos de alimentación
+    "MEDICHIHUAHUA": 601271,
+    "NUTRICHIHUAHUA": 436028,  // Actualizado
+    "POBREZA": 153422,  // Actualizado: sin apoyos de alimentación
   }
 };
 
@@ -1248,8 +1247,8 @@ const presupuestoModificadoPorEje = {
   },
   "2025": {
     "MEDICHIHUAHUA": 4719821389.36,  // ← EDITAR: Presupuesto modificado 2025
-    "NUTRICHIHUAHUA":1052488198.23,  // ← EDITAR: Presupuesto modificado 2025
-    "POBREZA": 998766838.20  // ← EDITAR: Presupuesto modificado 2025
+    "NUTRICHIHUAHUA":1092727195.11,  // ← EDITAR: Presupuesto modificado 2025
+    "POBREZA": 1924356611.75  // ← EDITAR: Presupuesto modificado 2025
   }
 };
 
@@ -1262,9 +1261,9 @@ const apoyosTotalesPorEje = {
     "POBREZA": 817403  // ← EDITAR: Total de apoyos 2024
   },
   "2025": {
-    "MEDICHIHUAHUA": 1212495,  // ← EDITAR: Total de apoyos 2025
-    "NUTRICHIHUAHUA": 4429223,  // ← EDITAR: Total de apoyos 2025
-    "POBREZA": 333551  // ← EDITAR: Total de apoyos 2025
+    "MEDICHIHUAHUA": 2017480,  // ← EDITAR: Total de apoyos 2025
+    "NUTRICHIHUAHUA": 4536404,  // ← EDITAR: Total de apoyos 2025
+    "POBREZA": 630757  // ← EDITAR: Total de apoyos 2025
   }
 };
 
@@ -2585,7 +2584,8 @@ const apoyosTotalesPorEje = {
           institucion: "ICHIJUV",
           programa: "Impulsando juventudes",
           codigo: "1S022A1",
-          presupuesto: 26590153.28,
+          presupuesto: 25827903.00
+,
           apoyos: [
             {
               tipo: "Becas",
@@ -2606,7 +2606,7 @@ const apoyosTotalesPorEje = {
           institucion: "ICHIJUV",
           programa: "Atención a la juventud",
           codigo: "2E029C1",
-          presupuesto: 10320632.31,
+          presupuesto:10397380.78,
           apoyos: [
             {
               tipo: "Eventos lúdicos de participación juvenil",
@@ -3508,7 +3508,7 @@ const apoyosTotalesPorEje = {
             {
               tipo: "Desayunos a niños",
               cantidad: 112228,
-              beneficiarios: 12897,
+              beneficiarios: 13245,
               gastoTotal: 74523800.00
             }
           ]
@@ -3567,8 +3567,8 @@ const apoyosTotalesPorEje = {
           apoyos: [
             {
               tipo: "Raciones alimentarias en comedores",
-              cantidad: 242017,
-              beneficiarios: 5352,
+              cantidad: 353908,
+              beneficiarios: 14893,
               gastoTotal:66348645.58
             },
             {
