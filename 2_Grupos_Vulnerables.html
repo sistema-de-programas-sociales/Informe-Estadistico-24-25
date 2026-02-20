@@ -684,7 +684,7 @@
         <div class="info-card-content">
           <div class="info-card-icon">🏙️</div>
           <div class="info-card-label">Población total de Chihuahua en situación de pobreza, vulnerabilidad y/o con algun tipo de carencia social</div>
-          <div class="info-card-value">1,792,300</div>
+          <div class="info-card-value">1,792,324</div>
           <div class="info-card-desc">Según INEGI</div>
         </div>
       </div>
@@ -701,7 +701,7 @@
 
     <!-- COBERTURA PoblaciónAL VISUAL -->
     <div class="grupos-section">
-      <h2 class="section-title">📈 Cobertura Poblaciónal General</h2>
+      <h2 class="section-title">📈 Cobertura Poblacional General</h2>
       <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px; align-items: center;">
         <div>
           <div style="margin-bottom: 20px;">
@@ -711,7 +711,7 @@
             </div>
             <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
               <span style="font-weight: 700; color: var(--gris-oscuro);">Población total de Chihuahua en situación de pobreza, vulnerabilidad y/o con algun tipo de carencia social</span>
-              <span style="font-weight: 700; font-size: 18px; color: var(--gris-oscuro);">1,792,300</span>
+              <span style="font-weight: 700; font-size: 18px; color: var(--gris-oscuro);">1,792,324</span>
             </div>
             <div style="background: #e0e0e0; height: 40px; border-radius: 20px; overflow: hidden; position: relative; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);">
               <div id="coberturaBar" style="background: linear-gradient(90deg, #667eea 0%, #764ba2 100%); height: 100%; width: 0%; transition: width 1s ease; display: flex; align-items: center; justify-content: flex-end; padding-right: 15px; color: white; font-weight: 900; font-size: 16px; border-radius: 20px;">
@@ -775,7 +775,7 @@
     // ==== PERSONAS ATENDIDAS MANUALMENTE POR AÑO ====
 const personasAtendidasManual = {
   "2024": 890844, // ← aquí pones la cifra manual
-  "2025": 1290597  // ← aquí también
+  "2025": 1083185  // ← aquí también
 };
 
     // Datos de grupos vulnerables
@@ -789,58 +789,65 @@ const personasAtendidasManual = {
           instituciones: 6
         },
         { 
-          grupo: "Personas en situación de pobreza", 
+          grupo: "Personas en situación de pobreza multidimensional", 
+          icono: "🌐",
+          PoblaciónPotencial: 669072,
+          personas: 592325, 
+          instituciones: 12
+        },
+        { 
+          grupo: "Personas en situación de pobreza (sin contar inseguridad alimentaria)", 
           icono: "🏚️",
-          PoblaciónPotencial: 587293,
-          personas: 594732, 
+          PoblaciónPotencial: 284219,
+          personas: 293307, 
           instituciones: 10
         },
         { 
           grupo: "Personas indígenas", 
           icono: "🧑🏽‍🦳",
-          PoblaciónPotencial: 401195,
+          PoblaciónPotencial: 276826,
           personas: 106593, 
           instituciones: 3
         },
         { 
           grupo: "Personas con discapacidad", 
           icono: "♿",
-          PoblaciónPotencial: 423734,
+          PoblaciónPotencial: 228514,
           personas: 22685, 
           instituciones: 2
         },
         { 
           grupo: "Familias vulnerables", 
           icono: "👨‍👩‍👧‍👦",
-          PoblaciónPotencial: 400000,
+          PoblaciónPotencial: 100000,
           personas: 2952, 
           instituciones: 1
         },
         { 
           grupo: "Niños, niñas y adolescentes (0-17 años)", 
           icono: "👶",
-          PoblaciónPotencial: 430152,
+          PoblaciónPotencial: 542176,
           personas: 157740, 
           instituciones: 13
         },
         { 
           grupo: "Juventudes (18-29 años)", 
           icono: "🎓",
-          PoblaciónPotencial: 462954,
+          PoblaciónPotencial:401598,
           personas: 32135, 
           instituciones: 13
         },
         { 
           grupo: "Personas adultas (30-64 años)", 
           icono: "👔",
-          PoblaciónPotencial: 752766,
+          PoblaciónPotencial: 730828,
           personas: 50432, 
           instituciones: 11
         },
         { 
           grupo: "Adultos mayores (65+ años)", 
           icono: "👴",
-          PoblaciónPotencial: 89300,
+          PoblaciónPotencial: 117722,
           personas: 20300, 
           instituciones: 10
         },
@@ -868,14 +875,14 @@ const personasAtendidasManual = {
         { 
           grupo: "Hombres en situación de vulnerabilidad", 
           icono: "👨",
-          PoblaciónPotencial: 895792,
+          PoblaciónPotencial: 887200,
           personas: 378919, 
           instituciones: 13
         },
         { 
           grupo: "Mujeres en situación de vulnerabilidad", 
           icono: "👩",
-          PoblaciónPotencial: 896508,
+          PoblaciónPotencial: 905124,
           personas: 505435, 
           instituciones: 13
         }
@@ -885,98 +892,105 @@ const personasAtendidasManual = {
           grupo: "Personas con inseguridad alimentaria", 
           icono: "🥗",
           PoblaciónPotencial: 384853,
-          personas: 413165, 
+          personas: 416383, 
           instituciones: 7
         },
         { 
-          grupo: "Personas en situación de pobreza", 
-          icono: "🏚️",
+          grupo: "Personas en situación de pobreza multidimensional", 
+          icono: "🌐",
           PoblaciónPotencial: 587300,
-          personas: 583626, 
-          instituciones: 11
+          personas: 569065, 
+          instituciones: 12
+        },
+        { 
+          grupo: "Personas en situación de pobreza (sin contar inseguridad alimentaria)", 
+          icono: "🏚️",
+          PoblaciónPotencial: 202447,
+          personas: 152682, 
+          instituciones: 10
         },
         { 
           grupo: "Personas indígenas", 
           icono: "🧑🏽‍🦳",
-          PoblaciónPotencial: 401195,
-          personas: 146375, 
+          PoblaciónPotencial: 296844,
+          personas: 134134, 
           instituciones: 3
         },
         { 
           grupo: "Personas con discapacidad", 
           icono: "♿",
-          PoblaciónPotencial: 423734,
-          personas: 17089, 
+          PoblaciónPotencial: 228514,
+          personas: 18876, 
           instituciones: 2
         },
         { 
           grupo: "Familias vulnerables", 
           icono: "👨‍👩‍👧‍👦",
-          PoblaciónPotencial: 400000,
-          personas: 3311, 
+          PoblaciónPotencial: 100000,
+          personas: 2253, 
           instituciones: 1
         },
         { 
           grupo: "Niños, niñas y adolescentes (0-17 años)", 
           icono: "👶",
-          PoblaciónPotencial: 430152,
-          personas: 31050, 
+          PoblaciónPotencial: 542176,
+          personas: 341473, 
           instituciones: 15
         },
         { 
           grupo: "Juventudes (18-29 años)", 
           icono: "🎓",
-          PoblaciónPotencial: 462954,
-          personas: 105739, 
+          PoblaciónPotencial: 401598,
+          personas: 170036, 
           instituciones: 15
         },
         { 
           grupo: "Personas adultas (30-64 años)", 
           icono: "👔",
-          PoblaciónPotencial: 752766,
-          personas: 379058, 
+          PoblaciónPotencial: 730828,
+          personas: 367465, 
           instituciones: 12
         },
         { 
           grupo: "Adultos mayores (65+ años)", 
           icono: "👴",
-          PoblaciónPotencial: 89300,
-          personas: 86594, 
+          PoblaciónPotencial: 117722,
+          personas: 110977, 
           instituciones: 11
         },
         { 
           grupo: "Productores del campo", 
           icono: "👨🏻‍🌾",
           PoblaciónPotencial: 57128,
-          personas: 7781, 
+          personas: 24345, 
           instituciones: 1
         },
         { 
           grupo: "Personas migrantes", 
           icono: "🌎",
           PoblaciónPotencial: 71261,
-          personas: 12268, 
+          personas: 5981, 
           instituciones: 1
         },
         { 
           grupo: "Personas sin acceso a servicios de salud", 
           icono: "🏥",
           PoblaciónPotencial: 811766,
-          personas: 610552, 
+          personas: 591525, 
           instituciones: 1
         },
         { 
           grupo: "Hombres en situación de vulnerabilidad", 
           icono: "👨",
           PoblaciónPotencial: 895792,
-          personas: 554489, 
+          personas: 461573, 
           instituciones: 15
         },
         { 
           grupo: "Mujeres en situación de vulnerabilidad", 
           icono: "👩",
           PoblaciónPotencial: 896508,
-          personas:729224, 
+          personas:621392, 
           instituciones: 15
         }
       ]
@@ -1531,7 +1545,7 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
         <div class="footer-section">
           <h3>📅 Actualización</h3>
-          <p>Sistema actualizado: Diciembre 2025<br>Próxima actualización: Trimestral</p>
+          <p>Sistema actualizado: Enero 2026<br>Próxima actualización: sin confirmar</p>
         </div>
       </div>
       <div class="footer-legend">
